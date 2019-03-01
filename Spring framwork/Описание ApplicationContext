@@ -1,0 +1,76 @@
+ApplicationContext - интерфейс, расширяющий интерфейс BeanFactory. Используется Spring для сохранения всей информации о среде, относящейся к прилодению, которой управляет Spring. ApplicationContext может определяться несколькими способами (причем их можно комбинировать в 1 проекте):
+
+Распространенным подходом к конфигурированию явялется - вынесение инфраструктуры приложения в xml (источники данных, диспетчера транзакций и т.п.), а конфигурацию DI в аннотациях.
+
+
+1. Конфигурирование xml-файла - cоздание отдельного от кода программы xml файла, где будет собрано описание ApplicationContext
+
+    Файл xml содержит базовое пространство имен, которое необходимо приложению:
+    Список распространенных пространств имен:
+
+        Spring Ядро
+            aop     - AopNamespaceHandler
+            c       - SimpleConstructorNamespaceHandler
+            cache   - CacheNamespaceHandler
+            context - ContextNamespaceHandler
+            jdbc    - JdbcNamespaceHandler
+            jee     - JeeNamespaceHandler
+            jms     - JmsNamespaceHandler
+            lang    - LangNamespaceHandler
+            mvc     - MvcNamespaceHandler
+            oxm     - OxmNamespaceHandler
+            p       - SimplePropertyNamespaceHandler
+            task    - TaskNamespaceHandler
+            tx      - TxNamespaceHandler
+            util    - UtilNamespaceHandler
+
+        Spring Безопасность
+
+            security    - SecurityNamespaceHandler
+            oauth       - OAuthSecurityNamespaceHandler
+
+        Spring интеграция
+
+            int     - IntegrationNamespaceHandler
+            amqp    - AmqpNamespaceHandler
+            event   - EventNamespaceHandler
+            feed    - FeedNamespaceHandler
+            file    - FileNamespaceHandler
+            ftp     - FtpNamespaceHandler
+            gemfire - GemfireIntegrationNamespaceHandler
+            groovy  - GroovyNamespaceHandler
+            http    - HttpNamespaceHandler
+            ip      - IpNamespaceHandler
+            jdbc    - JdbcNamespaceHandler
+            jms     - JmsNamespaceHandler
+            jmx     - JmxNamespaceHandler
+            mail    - MailNamespaceHandler
+            redis   - RedisNamespaceHandler
+            rmi     - RmiNamespaceHandler
+            script  - ScriptNamespaceHandler
+            security - IntegrationSecurityNamespaceHandler
+            sftp    - SftpNamespaceHandler
+            stream  - StreamNamespaceHandler
+            twitter - TwitterNamespaceHandler
+            ws      - WsNamespaceHandler
+            xml     - IntegrationXmlNamespaceHandler
+            xmpp    - XmppNamespaceHandler
+
+
+        Пример файла spring.xml :
+
+            <?xml version = "l.0" encoding="UTF-8"?>
+            <beans xmlns = "http://www.springframework.org/schema/beans"
+                    xmlns:xsi = "http://www.wЗ.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation = "http://www.springframework.org/schema/beans
+                    http://www.springframework.org/schema/beans/spring-beans.xsd">
+                
+                <bean id="beanName" class="ClassName" scope="prototype">                    // Параметр scope* - параметр, управляющий областю времени действия бина
+                    <constructor-arg ref="client"/>                                         // В качестве параметра передает другой бин
+                    <constructor-arg type="java.lang.String" value="value param"/>          // В качестве параметры передаем String
+                </bean>            
+            </beans>
+
+3. Java-аннотации - аннотации (@Component, @Controller) и т.п. Объявляется прямо в коде программы.
+        - Constructor injection
+        - Setter injection 
