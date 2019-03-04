@@ -14,7 +14,7 @@
     Так же необходимо указать listener - указывает на базовый обработчик всех запросов.
 
         <listener>
-            <lisrener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+            <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
         </listener>
 
 -------------------------------------------------------
@@ -38,22 +38,19 @@
         </servlet-mapping>
 
 
-2. Переходим к конфигурированию Spring. Конфигурирования выполняется в файле spting-context.xml, находится в src->main->resources - spring-context.xml Тут конфигурируем бин, отвечающий за поиск view.
+2. Переходим к конфигурированию Spring. Конфигурирования выполняется в файле, например spting-context.xml, находится в src->main->resources - spring-context.xml Тут конфигурируем бин, отвечающий за поиск view.
 
-        <bean id="resolver" 
-              class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-                    <!-- где искать -->        
-                <property name="prefix">
-                    <value>/views/</vlues>
-                </property>
-                    <1-- что искать -->
-                <property name="suffix">
-                    <value>.jsp</value>
-                </property>
+        <bean id="resolver"
+            class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+            
+            <!-- где искать -->
+            <property name="prefix" value="/views/"/>
+            <!-- что искать -->
+            <property name="suffix" value=".jsp"/>
         </bean>
 
-3. Переходим к созданию контроллеров. Контроллер - класс, отвечающий за обработку запросов.
-    Для создания контроллера мы должны объявить класс, указать у класса аннотацию @Controller - по этой аннотиции spring поймет, что перед ним контроллер. Далее указываем аннотацию @RequestMapping("/admin") - даная аннотация объясняет spring в случае какого вызова должен быть задействован нужный нам контроллер. 
+3. Переходим к созданию контроллеров. Контроллер - класс, отвечающий за обработку запросов (выбор классов service (тут собрана логика) и view).
+   Для создания контроллера мы должны объявить класс, указать у класса аннотацию @Controller - по этой аннотиции spring поймет, что перед ним контроллер. Далее указываем аннотацию @RequestMapping("/admin") - даная аннотация объясняет spring в случае какого вызова должен быть задействован нужный нам контроллер. 
 Полный путь складыватся из Пути публикации ([url-адрес]:[порт]/[строка servlet-mapping (web.xml)]/[@RequestMapping в контроллере]/[@RequestMapping метода в классе]).
 
     Пример:
