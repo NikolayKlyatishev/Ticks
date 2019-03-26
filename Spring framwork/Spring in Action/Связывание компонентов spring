@@ -3,12 +3,16 @@
 <bean id="duke" class="com.springinaction.springidol.Juggler />
 ------------------------------------------------------------------
 
+===== ВНЕДРЕНИЕ ЧЕРЕЗ КОНСТРУКТОР ====
+
 Внедрение через конструктор c явным указанием параметра примитивного типа:
 
 <bean id="duke" class="com.sptinginaction.springidol.Juggler">
     <constructor-arg value="15" />
 </bean>
 ------------------------------------------------------------------
+
+===== ВНЕДРЕНИЕ ЧЕРЕЗ КОНСТРУКТОР =====
 
 Внедрение через конструктор c явным указанием параметра. В качестве параметра используем примитивный тип и другой бин:
 
@@ -19,3 +23,153 @@
 
 <bean id="sonnet29" class="com.sptinginaction.springidol.Sonnet29" />
 ------------------------------------------------------------------
+
+===== ФАБРИЧНЫЕ МЕТОДЫ =====
+
+Объявление компонента спринг через вызов фабричного метода:
+
+<bean id="theStage" class="com.springinaction.springidol.Stage"
+    factory-method="getInstance" /> 
+где getInstance - имя вызываемого статического метода.
+------------------------------------------------------------------
+
+===== SCOPE - ОБЛАСТЬ ВИДИМОСТИ =====
+
+Объявление bean, экземпляр котого при каждом ображении к которому будет гарантированно создан новый компонент. Тег scope отвечает за установку такого свойства.
+
+<bean id="ticket"
+class="com.springinaction.springidol.Ticket" scope="prototype" />
+
+
+Фреймворк Spring позволяет определять различные области действия компонентов без жесткого определения правил видимости в программном коде.
+
+singleton       - В каждом контейнере Spring может быть создан только один компонент (по умолчанию)
+prototype       - Позволяет создавать произвольное количество компонентов (по одному на каждое обращение)
+request         - Область действия компонента ограничивается HTTP-запросом. Может применяться только в веб приложениях Spring (например, использующих Spring MVC)
+session         - Область действия компонента ограничивается HTTP-сеансом. Может применяться только в веб-приложениях Spring (например, использующих Spring MVC)
+global-session  - Область действия компонента ограничивается глобальным HTTP-сеансом. Может применяться только в портлетах
+------------------------------------------------------------------
+
+===== INIT и DESTROY методы =====
+
+Для иллюстрации представим, что у нас имеется Java-класс Auditorium , представляющий концертный зал, где проводится конкурс талантов. Вероятно, класс Auditorium должен иметь массу особенностей, но пока сосредоточимся на двух из них, играющих важную роль в начале и в конце выступлений: включение и выключение освещения.Для поддержки этих важных операций в классе Auditorium могут иметься методы turnOnLights() и turnOffLights() :
+
+Класс:
+
+public class Auditorium {
+    public void turnOnLights() {
+        // программный код, позволяющий включить освещение.
+    }
+    public void turnOffLights() {
+        // программный код, позволяющий выключить освещение.
+    }
+}
+
+Описание bean:
+
+<bean id="auditorium" class="com.springinaction.springidol.Auditorium"
+    init-method="turnOnLights"
+    destroy-method="turnOffLights"/>
+
+В соответствии с этим объявлением сразу после создания экземпляра компонента auditorium будет вызван метод turnOnLights(), включающий освещение зала. А непосредственно перед удалением компонента из контейнера будет вызван метод turnOffLights(), выключающий освещение.
+
+Можно так же добавить init-method и destroy-method методы в определение beans:
+
+<?xml version="1.0" encoding="UTF-8"?>
+    <beans  xmlns="http://www.springframework.org/schema/beans"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+            default-init-method="turnOnLights"
+            default-destroy-method="turnOffLights"> 
+        ...
+    </beans>
+------------------------------------------------------------------
+
+==== ВНЕДЕНИЕ ЧЕРЕЗ Setters & Getters =====
+
+<bean id="kenny" class="com.springinaction.springidol.Instrumentalist">
+    <property name="song" value="Jingle Bells" />
+</bean>
+
+Свойство property позволяет внедрить значения аргументов через setter
+
+<bean id="kenny2" class="com.springinaction.springidol.Instrumentalist">
+    <property name="song" value="Jingle Bells" />
+    <property name="instrument" ref="saxophone" />
+</bean>
+
+эту запись можно переписать с использованием пространства имен p
+Пространство имен p имеет URI схемы http://www.springframework.org/schema/p.
+
+<bean id="kenny" class="com.springinaction.springidol.Instrumentalist"
+    p:song = "Jingle Bells"
+    p:instrument-ref = "saxophone" />
+------------------------------------------------------------------
+
+==== ВНЕДРЕНИЕ КОЛЛЕКЦИЙ ====
+
+<list>  - Связывание списка значений, допускаются повторяющиеся значения
+<set>   - Связывание множества значений, гарантирует отсутствие повторяющихся значений
+<map>   - Связывание коллекций пар имя/значение, где имя и значение могут быть значениями любых типов
+<props> - Связывание коллекций пар имя/значение, где имя и значение должны имеет строковый тип (String)
+
+Элементы <list> и <set> можно использовать для настройки свойств, которые являются массивами или одной из реализаций java.util.Collection. Что касается элементов <map> и <props> , они соответствуют коллекциям с интерфейсами java.util.Map и java.util.Properties соответственно.
+
+
+<bean id="hank" class="com.springinaction.springidol.OneManBand">
+    <property name="instruments">
+        <list>
+            <ref bean="guitar" />
+            <ref bean="cymbal" />
+            <ref bean="harmonica" />
+        </list>
+    </property>
+</bean>
+
+
+Элемент <entry> в элементе <map> позволяет определить ключ и значение элемента отображения, каждый из которых может быть простым значением или ссылкой на другой компонент.
+key         - Определяет ключ элемента отображения как строку
+key-ref     - Определяет ключ элемента отображения как ссылку на компонент в контексте Spring
+value       - Определяет значение элемента отображения как строку
+value-ref   - Определяет значение элемента отображения как ссылку на компонент в контексте Spring
+
+bean id="hank" class="com.springinaction.springidol.OneManBand">
+    <property name="instruments">
+        <map>
+            <entry key="GUITAR" value-ref="guitar" />
+            <entry key="CYMBAL" value-ref="cymbal" />
+            <entry key="HARMONICA" value-ref="harmonica" />
+        </map>
+    </property>
+</bean>
+
+<property>  – это элемент для внедрения значения или ссылки на компонент в «обычное» свойство компонента; 
+<props>     – это элемент для определения коллекций типа java.util.Properties ;
+<prop>      – это элемент для определения члена коллекции <props
+
+<bean id="hank" class="com.springinaction.springidol.OneManBand">
+    <property name="instruments">
+        <props>
+            <prop key="GUITAR">STRUM STRUM STRUM</prop>
+            <prop key="CYMBAL">CRASH CRASH CRASH</prop>
+            <prop key="HARMONICA">HUM HUM HUM</prop>
+        </props>
+    </property>
+</bean>
+------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
