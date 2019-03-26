@@ -1,0 +1,21 @@
+Объявление простого компонента bean:
+
+<bean id="duke" class="com.springinaction.springidol.Juggler />
+------------------------------------------------------------------
+
+Внедрение через конструктор c явным указанием параметра примитивного типа:
+
+<bean id="duke" class="com.sptinginaction.springidol.Juggler">
+    <constructor-arg value="15" />
+</bean>
+------------------------------------------------------------------
+
+Внедрение через конструктор c явным указанием параметра. В качестве параметра используем примитивный тип и другой бин:
+
+<bean id="duke" class="com.sptinginaction.springidol.Juggler">
+    <constructor-arg value="15" />
+    <constructor-arg ref="sonnet29"  />
+</bean>
+
+<bean id="sonnet29" class="com.sptinginaction.springidol.Sonnet29" />
+------------------------------------------------------------------
