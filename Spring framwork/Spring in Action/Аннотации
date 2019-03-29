@@ -6,3 +6,121 @@
 @PostConstruct и @PreDestroy - реализация методов управления жизненным циклом конмпонентов внутри контейнера.
 @Component - автоматическое определение компонентов Spring.
 @CookieValue и @RequestHeader - позволяют извлекать значения из cookies заголовков запросов соответственно.
+---------------------------------------------------------------
+
+АННОТАЦИЯ @Autoeired
+
+Эта аннотация сообщает Spring о необходимости автоматического связывания компонентов по типу (byType). 
+
+Аннотацию @Autowired можно применять к любому методу (в том числе конструктору). При использовании с конструктором, аннотация указывает, что мех. автоматического связывания должен быть испрльзовать конструктор. даже если в описании компонента в XML файле отсутствует элемент <constructor-arg>
+
+@Autowired
+public void heresYourInstrument(Instrument instrument) {
+    this.instrument = instrument;
+}
+
+или даже свойству:
+
+@Autowired
+private Instrument instrument;
+
+НЕОБЯЗАТЕЛЬНОЕ СВЯЗЫВАНИЕ
+Аннотация @Autowired требует обязательного связывания. Если при поиск подходящего компонента для связывания не принес результатов генерируется ислючение NoSurchBeanDefinitionException. Для такого случая мы можем сообщить spring, что аннотируемое свойство не обязательно должно быть связано и значение null вполне допустимо:
+
+@Autowired(required=false)
+private Instrument instrument;
+
+УТОЧНЕНИЕ НЕОДНОЗНАЧНЫХ ЗАВИСИМОСТЕЙ
+Проблема неоднозначных зависимостей возникает в тех случаях, когда компонентов, подходящих под связывание более 1(по типу) и возникнет та же ошибка NoSuchBeanDefinitionException. ЧЧтобы подсказать фреймворку Spring какой именно компонент выбрать для автоматического связывания можно воспользоваться аннотацией @Qualifier: 
+
+@Autowired
+@Qualifier("guitar")
+private Instrument instrument;
+
+В этом случае спринг использует для связывания компонент с id="guitar". Помимо указания идентификатора компонента мы можен явно аннотировать компонент, а затем этот идентификатор указать вместе в аннотацией @Autowired
+
+// Аннотируем класс
+@Qualifier("stringed")
+public class Guitar implements Instrument {
+    ...
+}
+
+// Передаем аннотацию stringed для автоматического связывания посредством @Autowired
+@Autowired
+@Qualifier("stringed")
+private Instrument instrument;
+
+
+СОЗДАНИЕ СОБСТВЕННЫХ КВАЛИФИКАТОРОВ
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+public @interface StringedInstrument {
+}
+
+После определения аннотации @StringedInstrument ее можно использовать для аннотирования класса Guitar вместо аннотации @Qualifier
+
+
+@StringedInstrument
+public class Guitar implements Instrument {
+...
+}
+
+@Autowired
+@StringedInstrument
+private Instrument instrument;
+
+Когда фреймворк попытается выполнить автоматическое связывание свойства instrument , его выбор сузится от всех компонентов типа Instrument до тех из них, что отмечены аннотацией @StringedInstrument, если и таких компонентов будет более одного, тогда появится необходимость уточнить еще раз (например добавить аннотацию @Strummed) и так до тех пор, пока количество компонентов будет не более одного. 
+
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+public @interface Strummed {
+}
+
+// Теперь мы можем аннотировать свойство еще раз.
+@Autowired
+@StringedInstrument
+@Strummed
+private Instrument instrument;
+---------------------------------------------------------------------
+
+
+АННОТАЦИЯ @Inject
+
+Аннотация @Inject является почти полным аналогом аннотации @Autowired. Различаются эти аннотации тем, что относится она не к spring, а в спецификации JSR-330, так же у данной аннотации отсутствует атрибут required, поэтому неудолетворенные зависимости вызовут исключение. Так же отличительной чертой аннотации @Inject является наличие одной особенности. Вместо того чтобы внедрять зависимости непосредственно, от аннотации @Inject можно потребовать, чтобы она внедряла ссылку на реализацию интерфейса Provider. Среди всего прочего интерфейс Provider обеспечивает возможность отложенного внедрения ссылок на компоненты и внедрение нескольких экземп-
+ляров компонента. Например, представьте, что имеется класс KnifeJuggler (жонглер
+ножами), в экземпляр которого должен быть внедрен один или более экземпляров класса Knife (нож). Предположим, что компонент типа Knife объявлен как имеющий область действия prototype , тогда
+следующий конструктор KnifeJuggler сможет получить пять компонентов типа Knife :
+
+private Set<Knife> knives;
+@Inject
+public KnifeJuggler(Provider<Knife> knifeProvider) {
+    knives = new HashSet<Knife>();
+    for (int i = 0; i < 5; i++) {
+        knives.add(knifeProvider.get());
+    }
+}
+
+Вместо экземпляров класса Knife на этапе конструирования экземпляр KnifeJuggler получит экземпляр Provider<Knife> . На этом этапе будет внедрен только экземпляр объекта-посредника Provider .
+Внедрение фактических объектов типа Knife будет отложено до вызова метода get() объекта-посредника. В данном случае метод get() вызывается пять раз. А поскольку компонент типа Knife имеет область действия prototype , во множестве knives будет сохранено пять различных объектов типа Knife .
+
+УТОЧНЕНИЕ СВЯЗЫВАЕМЫХ СВОЙСТВ
+
+Аннотация @Inject тоже может сопровождаться уточняющей аннотацией @Named, подобной аннотации @Qualifier. Аннотация @Qualifier помогает сузить круг компонентов, доступных для выбора (ис-
+пользуя идентификатор компонента как один из возможных квалификаторов), тогда как аннотация @Named однозначно ссылается наидентификаторы компонентов.
+
+
+
+
+
+
+
+
+
