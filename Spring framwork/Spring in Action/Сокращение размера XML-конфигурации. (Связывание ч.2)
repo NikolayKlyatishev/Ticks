@@ -1,2 +1,94 @@
 АВТОМАТИЧЕСКОЕ СВЯЗЫВАНИЕ СВОЙСТВ КОМПОНЕНТОВ
     
+	Фреймворком поддерживается четыре разновидночти автоматического связывания:
+	
+byName		- Ищет конмпонент в контейнере, чье имя или идентификатор совпадает с именем саязываемого свойства. Если компонент не найден - свойство остается несвязанным. 
+byType		- ищет единственный компонент в контейнере, чей тип соответсвует типу связываемого свойства. Если не нашел - свойство остается несвязанным.
+constructor - пытается сопоставить конструктор компонента, куда выполняется внедрение, с компонентами, чьи типы совпадают с аргументами внедрения.
+autodetect	- сначала пытается выполнить автоматическое связывание через constructor, затем byType.
+
+
+АВТОМАТИЧЕСКОЕ СВЯЗЫВАНИЕ ПО УМОЛЧАНИЮ
+
+При необходимости добавления одного и того де артибута к нескольким компонентам можно использовать одни и те же настройки ко всем компонентам контейнера. Для этого в корневой элемент <beans> следует добавить default-autowire : 
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+		default-autowire="byType">
+	</beans>
+
+При необходимости можно создать несколько файлов с описанием контекста приложения с разными видами автосаязывания.
+
+
+СМЕШИВАНИЕ ЯВНОГО И АВТОМАТИЧЕСКОГО СВЯЗЫВНИЯ.
+=====================================================
+
+СВЯЗЫВАНИЕ ПО ИМЕНИ (byName)
+
+// Описание класса
+
+class Instrumentalist {
+	
+	private Instrument instrument;
+	private String song;
+	
+	// Constructors && Getters, Setters 
+	//... 
+	//
+}
+
+// Описание bean
+<bean id="kenny" class="com.springinaction.springidol.Instrumentalist" 		 	
+		autowire="byName">
+	<property name="song" value="Jingle Bells" />
+</bean>
+
+<bean id="instrument" class="com.springinaction.springidol.Guitar"/>
+
+В этом случае свойство instrument будет связано с классом Guitar фреймворком спринг автоматически через метод записи. (по имени имя класса - свойство).
+--------------------------------------------------------
+
+
+СВЯЗЫВАНИЕ ПО ТИПУ (byType)
+
+// Описание класса
+
+class Instrumentalist {
+	
+	private Guitar instrument;
+	private String song;
+	
+	// Constructors && Getters, Setters 
+	//... 
+	//
+}
+
+// Описание bean
+<bean id="kenny" class="com.springinaction.springidol.Instrumentalist" 		 	
+		autowire="byType">
+	<property name="song" value="Jingle Bells" />
+</bean>
+
+<bean id="instrument" class="com.springinaction.springidol.Guitar"/>
+
+В этом случае свойство instrument будет связано с классом Guitar фреймворком спринг автоматически через метод записи. (тип класса - тип свойства).
+
+Чтобы определить основного кандидата для автоматического связывания, есть 2 варианта:
+	
+	- primary
+Чтобы определить основного кандидата для автоматического связывания, в элемент <bean> определения компонента необходимо добавить атрибут primary . Если механизм автоматического связывания обнаружит только один подходящий компонент с атрибутом primary, установленным в значение true (это значение по умолчанию, остальные же должны быть явно помечено как false), он отдаст предпочтение этому компоненту.
+	<bean id="saxophone" class="com.springinaction.springidol.Saxophone"
+		primary="false" />
+	
+	- autowire-candidate
+При использовании решения, основанного на исключении некоторых компонентов из рассмотрения механизмом автоматического связывания, следует установить их атрибут autowire-candidate в значение false.
+	<bean id="saxophone" class="com.springinaction.springidol.Saxophone"
+		autowire-candidate="false" />
+--------------------------------------------------------
+
+АВТОМАТИЧЕСКОЕ СВЯЗЫВАНИЕ ЧЕРЕЗ КОНСТРУКТОР
+	<bean id="duke" class="com.springinaction.springidol.PoeticJuggler"
+		autowire="constructor" />
+При использовании autowire="constructor" аргументы constructor-arg можно убрать из объявления компонента и позволить выполнить внедрение фреймворку спринг. Это объявление сообщает фреймворку, что он должен исследовать конструктор класса PoeticJuggler и попытаться найти в конфигурации компоненты, соответствующие аргументам одного из конструкторов(byType). В случае обнаружения нескольких конструкторов, которые подходят фреймворк выдаст ошибку.
