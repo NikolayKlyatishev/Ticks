@@ -1,0 +1,71 @@
+	
+==========================+
+Аннотация @Configuration  |
+==========================+	
+	
+Аналог <beans> в конфигурационном файле .xml Spring 
+	
+	package com.springinaction.springidol;
+	import org.springframework.context.annotation.Configuration;
+
+	@Configuration
+	public class SpringIdolConfig {
+		// Здесь находятся методы, определяющие компоненты
+	}
+	
+Объявления компонентов – это обычные методы, отмеченные аннотацией @Bean.
+
+
+Объявление @Bean:
+
+	объявление c использованием аннотаций:
+	@Bean
+	public Performer duke() {
+		return new Juggler();
+	}
+	
+	аналог в xml:
+	<bean 
+		id="duke" 
+		class="com.springinaction.springidol.Juggler"/>	
+	
+	
+===================================================+
+Внедрение зависимостей в конфигурации на Языке Java|
+===================================================+
+
+ВНЕДРЕНИЕ ПРОСТЫХ ЗАВИСИМОСТЕЙ
+
+DI с использованием конструктора
+	@Bean
+	public Performer duke15() {
+		return new Juggler(15);
+	}
+	
+DI с использованием метода записи set
+	@Bean
+	public Performer kenny() {
+		Instrumentalist kenny = new Instrumentalist();
+		kenny.setSong("Jingle Bells");
+		return kenny;
+	}
+	
+ВНЕДРЕНИЕ ССЫЛОК НА ДРУГИЕ КОМПОНЕНТЫ
+
+	// Обявим простой компонент, его будем внедрять
+	@Bean
+	private Poem sonnet29() {
+		return new Sonnet29();
+	}
+	
+	// Объявим компонент poeticDuke и внедрим в него компонент Sonnet29
+	@Bean
+	public Performer poeticDuke() {
+		return new PoeticJuggler(sonnet29());
+	}
+	
+Вызов метода sonnet29() и внедрение sonnet29() отличаются, т.к. при внедрении зависимости фреймворк Spring не выполняет прямой вызов метода, а перехватывает это событие и пытается отыскать компонент в контексте приложения. 
+	
+	
+	
+	
