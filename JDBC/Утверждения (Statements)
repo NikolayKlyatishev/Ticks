@@ -1,0 +1,163 @@
+--------------------------------+
+Утверждения (Statements)        |
+--------------------------------+
+
+
+    Statement - интерфейс, используемый для доступа к БД для общих целей. Полезен, когда мы используем статические SQL-выражения во время работы программы. Не принимает никаких параметров.
+    PreparedStatment - интерфейс, используемый, когда мы планируем использовать SQL-выражения несколько раз. Принимает параметры во время работы программы.
+    CallableStatment - интерфейс, полезный, когда мы хотим получить доступ к различным процедурам БД. Принимает параметры во время работы.
+-------------------------------------------------
+
+Создание экземпляра Statement.
+
+        try {
+            statement = connection.createStatement();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            /*Do some job...*/
+        }
+        
+После получения экземпляра Statement, мы можем использовать для выполнения SQL-запросов. Для этого интерфейс Statment имеет 3 метода, которые реализуются для конкретной реализации JDBC драйвера. 
+    
+    - boolean execute(String SQL) - возвращает логическое значение true, если объект ResultSet может быть получен. В противном случае он вовращает false. Он используется для выполнения DDL SQL – запросов ил в случаях, когда мы используем динамический SQL
+    - int executeUpdate(String SQL) - возвращает количесство столбцов в таблице, на которое повлиял наш SQL – запрос. Мы используем этот метод для выполнения SQL – запросов, когда хотим получить количество задействованных столбцов, например количество данных по определённому запросу.
+    - ResultSet executeQuery(String SQL) - Этот мтеод возвращает нам экземпляр ResultSet. Мы используем этот метод в случаях, когда мы рассчитываем получить множество объектов в результате выполнения нашего SQL – запроса. 
+-------------------------------------------------
+ 
+Закрытие экземпляра Statment.
+
+Когда мы закрываем наше соединение (Connection) для сохранения результатов в БД мы таким же образом закрываем и экpемпляр Statement.
+
+    close()
+  
+Пример:
+    
+    Connection connection = null;
+    Statement statement = null;
+    
+    Class.fotName(JDBC_DRIVER);
+    connection = DriverManager(DATABASE_URL, USER, PASSWORD);
+    
+    try{
+        statement = connection.createStatement();
+    } catch(SQLException e) {
+        e.printStackTrace();
+    } finally {
+        if (statement != null) {
+        statement.close();
+    }     
+-------------------------------------------------
+
+Создание экземпляра PreparedStatment
+
+    PreparedStatement наследует интерфейс Statement, что даёт нам опредёлнные преимущества перед обычным Statement. В частности, мы получаем большую гибкость при динамичской поддержке аргументов.
+    
+        try {
+            String SQL = "Update developers SET salary WHERE salary = ?";
+            preparedStatement = connection.prepareStatement(SQL);
+            preparedStatement.setInt(1, 3000);
+        
+        } catch (SQLException e){
+            
+            e.printStackTrace();
+               
+        } finally {
+            
+            if (preparedStatement != null) {
+                preparedStatement.close();
+            }
+        }
+    
+    В данном примере мы выберем все записи из таблицы developers, у которых значение поля salary = 3000.
+
+  
+Закрытие экземпляра PreparedStatement выше в примере.     
+-------------------------------------------------
+   
+   Создание экземпляра CallableStatement.
+Экземпляр CallableStatement используется для выполнения процедур, непосредоственно в самой БД.
+    Пример:
+        DELIMITER $$
+        DROP PROCEDURE IF EXISTS `developers`.`getDeveloperName` $$
+        CREATE PROCEDURE PROSELYTE_TUTORIALS.`getDeveloperName`
+        (IN DEVELOPER_ID INT, OUT DEVELOPER_NAME VARCHAR(50))
+        BEGIN
+        SELECT first INTO DEVELOPER_NAME
+        FROM developers
+        WHERE id = DEVELOPER_ID;
+
+        END $$
+
+        DELIMITER ;        
+ 
+Существует три типа параметров: IN, OUT, INOUT. PreparedStatement использует только IN, а CallableStatement, в свою очередь, использует все три.  
+    
+    IN - Параметр, значение которого известно в момент, когда создаётся запрос. Мы назначем параметр IN с помощью метода типа setXXX().
+    OUT - Параметр, значение которого возвращается SQL – запросом. Мы получаем значения из  OUT с помощью методов типа getXXX().
+    INOUT - Параметр, который использует входные и выходные значения. Мы назначем параметр с помощью метода типа setXXX(), а получаем значения, с помощью метода типа getXXX().    
+    
+    
+    Пример Java-кода:
+        try {
+            String SQL = "{call getDeveloperName (?, ?)}";
+            callableStatement = connection.prepareCall(SQL);
+        }finally {
+            /* do some job */
+        }
+        
+    Когда мы используем параметры типа OUT и INOUT, нам необходимозадействовать дополнительный метод registerOutParameter(). Этот метод устанавливает тип данных JDBC в тип данных процедуры.
+
+    После того, как мы вызвали рпоцедуру, мы получаем значение из параметра OUT с помощью соответствующего метода getXXX(). Этот метод преобразует полученное значение из типа дыннх SQL в тип данных Java.
+
+    Закрытие экземпляра CallableStatement
+    callableStatement.close();
+    
+
+Пример:
+    try {
+
+        String SQL = "{call getDeveloperName (?, ?)}";
+        callableStatement = connection.prepareCall(SQL);
+
+        int developerID = 1;
+        callableStatement.setInt(1, developerID);
+        callableStatement.registerOutParameter(2, Types.VARCHAR);
+
+        callableStatement.execute(); 
+        
+        String developerName = callableStatement.getString(2);
+        System.out.println("Developer INFO");
+        System.out.println("id: " + developerID);
+        System.out.println("Name: " + developerName);
+           
+    } finally {
+        
+        if (callableStatement != null) {
+            callableStatement.close();
+        }
+        
+        if (connection != null) {
+            connection.close();
+        }
+    }    
+ 
+В результате работы программы получим вывод:
+
+  Developer INFO
+  id: 1
+  Name: Ivan
+  
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+   
+    
+    

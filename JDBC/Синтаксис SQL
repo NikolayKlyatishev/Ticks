@@ -1,0 +1,40 @@
+--------------------------------+
+БАЗОВЫЙ СИНТАСИС SQL            |
+--------------------------------+
+
+- Создание БД 
+        CREATE DATABASE NameMyDB;
+        
+- Удаление БД
+        DROP DATABASE NameMyDB;
+    
+- Создание таблицы
+        CREATE TABLE developers{
+        
+        id INT,
+        name VARCHAR(50)
+        speciality VARCHAR(50)
+        salary INT    
+
+        }
+
+- Удаление таблицы
+        DROP TABLE developers;
+        
+- Добавление записи
+        INSERT INTO developers VALUES (1, 'Proselyte', 'Java', 2000);
+        
+- Получение записи
+        SELECT * FROM developers;
+    или
+        SELECT id, name FROM developers WHERE specialty LIKE '%java%';
+
+- Редактирование записи
+        UPADTE developers SET salary = 3000 WHERE speciality LIKE '%java'%
+        
+        Данная запись установит salary = 3000 для всех записей, где speciality = java
+        
+- Удаление записи
+        DELETE FROM developers WHERE name = 'PETER';
+        
+        Удалит запись из таблицы, где name = PETER.s
