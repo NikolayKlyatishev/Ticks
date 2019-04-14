@@ -1,0 +1,69 @@
+ипы данных языка программирования Java в соответствующие типы данных SQL. Для этого используется стандартное связывание  основных типов данных формата (“Тип данных Java” – “Тип данных SQL”). Например, тип String языка Java преобразовывается в тип данных SQL – VARCHAR.
+
+В таблице ниже приведены примеры того, в какие типы данных Java преобразовываются типы данных SQL. Для преобразования используется методы формата setXXX() и updateXXX().
+
+SQL	        JDBC/Java	            setXXX	        updateXXX
+VARCHAR	    java.lang.String	    setString	    updateString
+CHAR	    java.lang.String	    setString	    updateString
+LONGVARCHAR	java.lang.String	    setString	    updateString
+BIT	        boolean	                setBoolean	    updateBoolean
+NUMERIC	    java.math.BigDecimal	setBigDecimal	updateBigDecimal
+TINYINT	    byte	                setByte	        updateByte
+SMALLINT	short	                setShort	    updateShort
+INTEGER	    int	                    setInt	        updateInt
+BIGINT	    long	                setLong	        updateLong
+REAL	    float	                setFloat	    updateFloat
+FLOAT	    float	                setFloat	    updateFloat
+DOUBLE	    double	                setDouble	    updateDouble
+VARBINARY	byte[ ]	                setBytes	    updateBytes
+BINARY	    byte[ ]	                setBytes	    updateBytes
+DATE	    java.sql.Date	        setDate	        updateDate
+TIME	    java.sql.Time	        setTime	        updateTime
+TIMESTAMP	java.sql.Timestamp	    setTimestamp	updateTimestamp
+CLOB	    java.sql.Clob	        setClob	        updateClob
+BLOB	    java.sql.Blob	        setBlob	        updateBlob
+ARRAY	    java.sql.Array	        setARRAY	    updateARRAY
+REF	        java.sql.Ref	        SetRef	        updateRef
+STRUCT	    java.sql.Struct	        SetStruct	    updateStruct
+
+
+Пример:
+public class DataTypesConversionDemo {
+    public static void main(String[] args) {
+        
+        /**
+         *  Java Date and Time
+         */
+        java.util.Date javaDate = new java.util.Date();
+        long javaTime = javaDate.getTime();
+
+        System.out.println("Current date and time (Java): " + javaDate.toString());
+        System.out.printf("Current time (Java): " + javaDate.getHours() + ":" +
+                javaDate.getMinutes() + ":"
+                + javaDate.getSeconds());
+
+        /**
+         * SQL Date and Time
+         */
+        java.sql.Timestamp sqlTimeStamp = new java.sql.Timestamp(javaTime);
+        java.sql.Date sqlDate = new java.sql.Date(javaTime);
+        java.sql.Time sqlTime = new java.sql.Time(javaTime);
+
+        System.out.println("\n=======================================\n");
+        System.out.println("Current timeStamp (SQL): " + sqlTimeStamp.toString());
+        System.out.println("Current date (SQL): " + sqlDate.toString());
+        System.out.println("Current time (SQL): " + sqlTime.toString());
+
+
+    }
+}
+
+Результат выполнения
+
+Current date and time (Java): Sun Mar 20 05:56:11 EET 2016
+Current time (Java): 5:56:11
+=======================================
+
+Current timeStamp (SQL): 2016-03-20 05:56:11.105
+Current date (SQL): 2016-03-20
+Current time (SQL): 05:56:11
