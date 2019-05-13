@@ -1,0 +1,50 @@
+Основным интерфейсом для взаимодействий с Hibernate является интерфейс org.hibernate.Session
+
+Session - этот интерфейс обеспечивает базовую функциональность доступа к данным, позволяя сохранять, обновлять, удалять и загружать объекты в/из базы данных. Именно через этот интрефейс прикладные объекты DAO будут выполнять все операции с хранилищем данных.
+
+
+НАСТРОКА сохранения объектов предметной области с использованием XML - файлов отображения
+
+Конфигурация компонента LocalSessionFactoryBean включает настройку трех свойств. В свойство dataSource внедряется ссылка на компонент DataSource . Свойство mappingResources принимает список из одного или более файлов отображений, определяющих стратегию хранения данных приложения. Наконец, свойство hibernateProperties позволяет определить мелкие детали поведения Hibernate. В данном случае фреймворку Hibernate сообщается, что он будет взаимодействовать с базой данных Hypersonic и для создания SQL-запросов должен использовать диалект HSQLDialect.
+
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="mappingResources">
+            <list>
+                <value>Spitter.hbm.xml</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="dialect">
+                    org.hibernate.dialect.HSQLDialect
+                </prop>
+            </props>
+        </property>
+    </bean>
+    
+    
+НАСТРОКА сохранения объектов предметной области с использованием аннотаций.
+
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="packagesToScan" value="com.habuma.spitter.domain" />
+        <property name="hibernateProperties">
+            <props>
+                <prop key="dialect">org.hibernate.dialect.HSQLDialect</prop>
+            </props>
+        </property>
+    </bean>
+    
+    Вместо списка файлов отображений можно воспользоваться свойством packagesToScan , чтобы сообщить фреймворку Spring один или более пакетов, где следует искать классы объектов предметной области, аннотированные для сохранения с помощью Hibernate. В их число входят классы, отмеченные аннотациями JPA @Entity или @MappedSuperclass , и собственной аннотацией Hibernate – @Entity.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
