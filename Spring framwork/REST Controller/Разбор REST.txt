@@ -1,0 +1,27 @@
+Разбор REST.
+
+public class Initializer implements WebApplicationInitializer {
+
+    private static final String DISPATCHER_SERVLET_NAME = "dispatcher";
+
+	// Классом реализуется интерфейс WebApplicationInitializer, где есть 1 метод, onStartup, поднимающий контекст веб приложения.
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        
+		// Создаем контекст приложения
+		AnnotationConfigWebApplicationContext ctx = new AnnotationConfigWebApplicationContext();
+        
+		// Регистрируем конфигурационный класс в веб контексте спринга. 
+		ctx.register(WebAppConfig.class);
+		
+		// 
+        servletContext.addListener(new ContextLoaderListener(ctx));
+
+        ctx.setServletContext(servletContext);
+
+        ServletRegistration.Dynamic servlet =
+                servletContext.addServlet(DISPATCHER_SERVLET_NAME, new DispatcherServlet(ctx));
+        servlet.addMapping("/");
+        servlet.setLoadOnStartup(1);
+    }
+}
