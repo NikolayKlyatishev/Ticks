@@ -1,0 +1,37 @@
+
+Для подключения кеширования в spring-boot проекте.
+
+
+1. Записимость в pom.xml:
+
+	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artefactId>spring-boot-starter-cache</artefactId>
+	</dependency>
+
+2. В классе контекста добавить аннотацию включения @EnableCaching
+
+	@EnableCaching
+	@SpringBootApplication
+	public class DemoClientApplication {
+		public static void main(String[] args) throws ..... {
+			ApplicationContext ctx = SpringApplicati...
+			...
+			...
+		}
+	}
+
+3. Сконфигурировать бин
+
+	@Bean
+	public CacheManager cacheManager() }
+		return new ConcurentMapCacheManager("Наименование коллекции");
+	}
+	
+4. Добавить к методу, результат работы которого мы хотим закешировать аннотацию @Cacheable("Наименование коллецкии")
+
+	@Cacheable("sities")
+	@Override
+	public List<SiteInfo> findAllBlockedSites() {
+		return restTemplate.exchange(serverUrl + "/blocked-sites", ...);
+	}

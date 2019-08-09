@@ -1,0 +1,58 @@
+	СЕССИИ
+
+При использовании hibernate мы пытаемся создавать сессии при необходимости, а затем уничтожать их из-за того, что ни не являются потоко-защищёнными и не должны быть открыты в течение длительного времени. Сессии используются для создания, чтения, редактирования и удаления объектов с помощью сессий.
+
+Экземпляр класса может находиться в одном из 3 состояний:
+
+	- transient - это новый экземпляр устойчивого класса, который не привязан к сессии и ещё не представлен в БД. Он не имеет значения, по которому может быть идентифицирован.
+	- persistent - мы можем создать экземпляр класса, связав его с сессией. Устойчивый экземпляр класса представлен в БД, а значение идентификатора связано с сессией.
+	- detached - после того, как сессия закрыта, экземпляр класса становится отдельным, независимым экземпляром класса.
+	
+........
+Session session = sessionFactory.openSession();
+Transaction transaction = null;
+    
+    try{
+        transaction = session.beginTransaction();
+        
+        /**
+         * Here we make some work.
+         * */
+        
+        transaction.commit();
+    }catch(Exception e){
+        if(transaction !=null){
+            transaction.rollback();
+            e.printStackTrace();
+        }
+        e.printStackTrace();
+    }finally{
+        session.close();
+    }
+........
+
+Рассмотрим интерфейс методы интерфейса Session:
+
+	Transaction beginTransaction() 		- Начинает транзакцию и возвращает объект Transaction.
+	void cancelQuery() 					- Отменяет выполнение текущего запроса.
+	void clear() 						- Полностью очищает сессию
+	Connection close() 					- Заканчивает сессию, осовождает JDBC-соединение и выполняет очистку.
+	Criteria createCriteria(String entityName) - Создание нового экземпляра Criteria для объекта с указанным именем.
+	Criteria createCriteria(Class persistentClass) - Создание нового экземпляра Criteria для указанного класса.
+	Serializable getIdentifier(Object object) - Возвращает идентификатор данной сущности, как сущности, связанной с данной сессией.
+	void update(String entityName, Object object) - Обновляет экземпляр с идентификатором, указанном в аргументе.
+	void update(Object object) 			- Обновляет экземпляр с идентификатором, указанном в аргументе.
+	void saveOrUpdate(Object object) 	- Созраняет или обновляет указанный экземпляр. 
+	Serializable save(Object object) 	- Сохраянет экземпляр, предварительно назначив сгенрированный идентификатор.
+	boolean isOpen() 					- Проверяет открыта ли сессия.
+	boolean isDirty() 					- Проверят, есть ли в данной сессии какие-либо изменения, которые должны быть синхронизованы с базой данных (далее – БД).
+	boolean isConnected() 				- Проверяет, подключена ли сессия в данный момент.
+	Transaction getTransaction() 		- Получает связанную с этой сессией транзакцию.
+	void refresh(Object object) 		- Обновляет состояние экземпляра из БД.
+	SessionFactory getSessionFactory() 	- Возвращает фабрику сессий (SessionFactory), которая создала данную сессию.
+	Session get(String entityName, Serializable id) - Возвращает созранённый экземпляр с указанными именем сущности и идентификатором. Если таких сохранённых экземпляров нет – возвращает null.
+	void delete(String entityName, Object object) - Удаляет сохранённый экземпляр из БД.
+	void delete(Object object) 			- Удаляет сохранённый экземпляр из БД.
+	SQLQuery createSQLQuery(String queryString) - Создаёт новый экземпляр SQL-запроса (SQLQuery) для данной SQL-строки.
+	Query createQuery(String queryString) - Создаёт новый экземпляр запроса (Query) для данной HQL-строки.
+	Query createFilter(Object collection, String queryString) - Создаёт новый экземпляр запроса (Query) для данной коллекции и фильтра-строки.

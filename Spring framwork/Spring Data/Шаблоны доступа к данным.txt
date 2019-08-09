@@ -1,0 +1,18 @@
+ШАБЛОНЫ ДОСТУПА К ДАННЫМ
+
+Таблица 6.3. Классы поддержки DAO обеспечивают удобный доступ к соответствующим шаблонам доступа к данным 
+
+Класс поддержки DAO
+(org.springframework.*)						Обеспечиваетподдержку для...
+1. jca.cci.support.CciDaoSupport 				Соединений JCA CCI
+2. jdbc.core.support.JdbcDaoSupport 			Соединений JDBC
+3. jdbc.core.namedparam							Соединений JDBC, поддерживающих
+	.NamedParameterJdbcDaoSupport 					именованные параметры
+4. jdbc.core.simple.SimpleJdbcDaoSupport 		Соединений JDBC, поддерживающих
+													упрощенные конструкции Java 5
+5. orm.hibernate.support.HibernateDaoSupport 	Сеансов Hibernate 2.x
+6. orm.hibernate3.support.HibernateDaoSupport 	Сеансов Hibernate 3.x
+7. orm.ibatis.support.SqlMapClientDaoSupport 	Клиентов iBATIS SqlMap
+8. orm.jdo.support.JdoDaoSupport 				Реализаций Java Data Object
+9. orm.jpa.support.JpaDaoSupport 				Диспетчеров сущностей Java 			
+													Persistence 	API
