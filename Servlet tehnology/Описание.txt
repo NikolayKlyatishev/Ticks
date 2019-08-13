@@ -1,0 +1,60 @@
+Servlet technolody. Описание.
+
+Для реализации работы сервлетов мы должны:
+
+_______________________________________________________
+1. Создать Класс, унаследоваться от класса HttpServlet. 
+Для использования этого класса нужно импартнуть пакет javax.servlet. Сделать это можно либо руками через jar, либо с использованием сборщиков. Для maven зависимость будет выглядеть так:
+
+	<dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>4.0.1</version>
+    </dependency>
+
+Этот класс предоставляет методы, обрабатывающие разные типы http запросов: 
+	
+	doGet, 
+	doPost, 
+	doDelete, 
+	doPut 
+	и пр.
+
+_______________________________________________________
+2. Создать структуру каталогов в корне веб-приложения	
+	
+	webapp/WEB-INF/
+	
+_______________________________________________________	
+3. В каталоге WEB-INF создать файл web.xml Этот файл является дескриптором развёртывания - файлом, который описывает то, как компонент должен быть развернут сервером сервлетов или сервером приложений.
+
+Пример web.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+
+	<!-- Текстовое описание -->
+    <description>
+        
+    </description>
+
+	<!-- Указание имени сервлета и используемый, в качестве сервлета класс -->
+    <servlet>
+        <servlet-name>ClinicServlet</servlet-name>
+        <servlet-class>org.nkkl.servlets.ClinicServlet</servlet-class>
+    </servlet>
+
+
+	<!-- Маппинг сервлета. Тут мы объясняем контейнеру, запросы от какого url 
+	нужно передавать для обработки нашему сервлету -->
+    <servlet-mapping>
+        <servlet-name>ClinicServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+</web-app>
+
