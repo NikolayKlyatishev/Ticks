@@ -101,3 +101,94 @@
 			// ...
 		}
 
+	После получения экземпляра атрибута модели применяется привязка данных. Класс WebDataBinder сопоставляет имена параметров запроса сервлета (параметры запроса и поля формы) с именами полей целевого объекта. Соответствующие поля заполняются после применения преобразования типа, где это необходимо. Дополнительные сведения о привязке данных (и проверке) см. В разделе Validation. Дополнительные сведения о настройке привязки данных см. В разделе DataBinder.
+	
+	Привязка данных может привести к ошибкам. По умолчанию создается исключение BindException. Однако для проверки таких ошибок в методе контроллера можно добавить аргумент BindingResult непосредственно рядом с атрибутом @ModelAttribute, как показано в следующем примере:
+	
+		@PostMapping("/owners/{ownerId}/pets/{petId}/edit")
+		public String processSubmit(@ModelAttribute("pet") Pet pet, BindingResult result) { 
+			if (result.hasErrors()) {
+				return "petForm";
+			}
+			// ...
+		}
+		
+	В некоторых случаях может потребоваться доступ к атрибуту модели без привязки данных. В таких случаях можно ввести модель в контроллер и получить к ней прямой доступ или, в качестве альтернативы, установить @ModelAttribute (binding=false), как показано в следующем примере:
+	
+		@ModelAttribute
+		public AccountForm setUpForm() {
+			return new AccountForm();
+		}
+
+		@ModelAttribute
+		public Account findAccount(@PathVariable String accountId) {
+			return accountRepository.findOne(accountId);
+		}
+
+		@PostMapping("update")
+		public String update(@Valid AccountForm form, BindingResult result,
+				@ModelAttribute(binding=false) Account account) { 
+			// ...
+		}
+	
+	Вы можете автоматически применить проверку после привязки данных, добавив javax.validation.Valid аннотацию или Спринговую аннотацию @Validated (Bean Validation and Spring validation). В следующем примере показано, как это сделать:
+	
+		@PostMapping("/owners/{ownerId}/pets/{petId}/edit")
+		public String processSubmit(@Valid @ModelAttribute("pet") Pet pet, BindingResult result) { 
+			if (result.hasErrors()) {
+				return "petForm";
+			}
+			// ...
+		}
+	
+	Обратите внимание, что использование @ModelAttribute является необязательным (например, для установки его атрибутов). По умолчанию любой аргумент, который не является простым типом значения (как определено BeanUtils#isSimpleProperty) и не разрешен никаким другим преобразователем аргументов, обрабатывается так, как если бы он был аннотирован с помощью @ModelAttribute.
+	
+	
+	
+@SessionAttributes - аннотация, которая используется для хранения атрибутов модели в сеансе сервлета HTTP между запросами. Это аннотация уровня класса, которая объявляет атрибуты сеанса, используемые определенным контроллером. Обычно здесь перечислены имена атрибутов модели или типы атрибутов модели, которые должны быть сохранены в сеансе для последующих запросов на доступ.
+
+		@Controller
+		@SessionAttributes("pet") 
+		public class EditPetForm {
+			// ...
+		}
+	
+	При первом запросе, когда атрибут модели с именем pet добавляется к модели, он автоматически повышается и сохраняется в сеансе сервлета HTTP. Он остается там до тех пор, пока другой метод контроллера не использует аргумент метода SessionStatus для очистки хранилища, как показано в следующем примере:
+	
+		@Controller
+		@SessionAttributes("pet") 	// Сохранение значения Pet в сеансе сервлета
+		public class EditPetForm {
+
+			// ...
+
+			@PostMapping("/pets/{id}")
+			public String handle(Pet pet, BindingResult errors, SessionStatus status) {
+				if (errors.hasErrors) {
+					// ...
+				}
+					status.setComplete(); 	// Очистка значения Pet из сеанса сервлета
+					// ...
+				}
+			}
+		}
+		
+		
+
+@SessionAttribute - используется, если вам нужен доступ к уже существующим атрибутам сеанса, которые управляются глобально (то есть вне контроллера — например, с помощью фильтра) и могут присутствовать или нет, как показано в следующем примере:
+
+		@RequestMapping("/")
+		public String handle(@SessionAttribute User user) { 
+			// ...
+		}
+		
+	Для случаев, требующих добавления или удаления атрибутов сеанса, рассмотрите возможность DI org.springframework.web.context.request.WebRequest или javax.servlet.http.HttpSession в метод контроллера.
+		
+	Для временного хранения атрибутов модели в сеансе как части рабочего процесса контроллера рекомендуется использовать @ SessionAttributes, как описано в разделе @SessionAttributes.
+	
+
+@RequestAttribute - Аналогично @SessionAttribute, вы можете использовать аннотации @RequestAttribute для доступа к уже существующим атрибутам запроса, созданным ранее (например, с помощью фильтра сервлетов или HandlerInterceptor).
+
+		@GetMapping("/")
+		public String handle(@RequestAttribute Client client) { 
+			// ...
+		}
