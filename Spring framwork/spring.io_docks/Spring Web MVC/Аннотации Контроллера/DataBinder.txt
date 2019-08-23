@@ -1,0 +1,51 @@
+DataBinder - преобразователь данных
+
+	Классы @Controller или @ControllerAdvice могут содержать методы отмеченные аннотацией @InitBinder, которые инициализируют экземпляры WebDataBinder, а те, в свою очередь, могут:		
+	
+		- привязать параметры запроса (т.е. данные формы или запроса) к объекту модели.
+		- преобразовывать строковые значения запроса (такие как параметры запроса, переменные пути, заголовки, файлы cookie и другие) в целевой тип аргументов метода контроллера.
+		- Форматировать значения объектов model как строковые значения при рендеринге HTML-форм.
+	
+	Методы @InitBinder могут регистрировать java для конкретного java.bean.PropertyEditor или Спрингового Converter и компоненты Formatter. Кроме того, можно использовать конфигурацию MVC для регистрации типов Converter и Formatter в глобальной общей службе FormattingConversionService.
+	
+	Методы @InitBinder поддерживают многие из тех же аргументов, что и методы @RequestMapping, за исключением аргументов @ModelAttribute (command object). Как правило, они объявляются с аргументом WebDataBinder (для регистрации) и возвращаемое значение типа Void. В следующем списке приведен пример:
+	
+			@Controller
+			public class FormController {
+
+				@InitBinder 	// Определение метода @InitBinder
+				public void initBinder(WebDataBinder binder) {
+					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+					dateFormat.setLenient(false);
+					binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, false));
+				}
+
+				// ...
+			}
+			
+	Кроме того, при использовании настройки на основе Formatter с помощью общего FormattingConversionService можно повторно использовать тот же подход и зарегистрировать реализации модуля Formatter для конкретного контроллера, как показано в следующем примере:
+	
+	
+			@Controller
+			public class FormController {
+
+				@InitBinder 	// Определение @InitBinder в кастомном форматере
+				protected void initBinder(WebDataBinder binder) {
+					binder.addCustomFormatter(new DateFormatter("yyyy-MM-dd"));
+				}
+
+				// ...
+			}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

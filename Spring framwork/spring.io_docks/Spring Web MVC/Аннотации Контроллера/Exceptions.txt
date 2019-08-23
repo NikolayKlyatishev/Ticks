@@ -1,0 +1,45 @@
+Exceptions
+
+	Классы @Controller и @ControllerAdvice могут иметь методы @ExceptionHandler для обработки исключений из методов контроллера, как показано в следующем примере:
+	
+		@Controller
+		public class SimpleController {
+
+			// ...
+
+			@ExceptionHandler
+			public ResponseEntity<String> handle(IOException ex) {
+				// ...
+			}
+		}
+		
+	Исключение может совпадать с распространяемым исключением верхнего уровня (то есть с прямым IOException) или с непосредственной причиной в исключении оболочки верхнего уровня (например, IOException, обернутое в IllegalStateException).	
+	Для сопоставления типов исключений предпочтительно объявить целевое исключение в качестве аргумента метода, как показано в предыдущем примере. Когда несколько методов исключения совпадают, корневое совпадение исключения обычно предпочтительнее совпадения исключения причины. Более конкретно, ExceptionDepthComparator используется для сортировки исключений на основе их глубины из брошенного типа исключения.
+	
+	Кроме того, объявление аннотации может сузить типы исключений для соответствия, как показано в следующем примере:
+	
+		@ExceptionHandler({FileSystemException.class, RemoteException.class})
+		public ResponseEntity<String> handle(IOException ex) {
+			// ...
+		}
+	
+	Вы даже можете использовать список конкретных типов исключений с очень общей сигнатурой аргумента, как показано в следующем примере:	
+		
+		@ExceptionHandler({FileSystemException.class, RemoteException.class})
+		public ResponseEntity<String> handle(Exception ex) {
+			// ...
+		}
+		
+		
+Method Arguments	
+	Методы ExceptionHandler поддерживают следующие аргументы
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		

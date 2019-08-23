@@ -1,5 +1,4 @@
-Аннотации
-
+Аннотации, используемые в контроллерах
 
 
 @RequestParam - используется для привязки параметров запроса сервлета (то есть параметров запроса или данных формы) к аргументу метода в контроллере.
@@ -76,8 +75,9 @@
 	Если тип параметра в методе не String - автоматически применяется преобразование типов, описанное в разделе Type Conversion.	
 	
 
+@ModelAttribute
 
-@ModelAttribute - используется аннотация @ModelAttribute для аргумента метода, для получения доступа к атрибуту из модели или создать его экземпляр, если он отсутствует. Атрибут модели накладывается на значения из параметров запроса сервлета HTTP, по совпадению имен полей. Это называется маппингом данных, и это избавляет вас от необходимости ручного разбора и преобразования отдельных параметров запроса и полей формы. В следующем примере показано, как это сделать:	
+	@ModelAttribute - используется аннотация @ModelAttribute для аргумента метода, для получения доступа к атрибуту из модели или создать его экземпляр, если он отсутствует. Атрибут модели накладывается на значения из параметров запроса сервлета HTTP, по совпадению имен полей. Это называется маппингом данных, и это избавляет вас от необходимости ручного разбора и преобразования отдельных параметров запроса и полей формы. В следующем примере показано, как это сделать:	
 
 		@PostMapping("/owners/{ownerId}/pets/{petId}/edit")
 		public String processSubmit(@ModelAttribute Pet pet) { 
@@ -144,8 +144,9 @@
 	Обратите внимание, что использование @ModelAttribute является необязательным (например, для установки его атрибутов). По умолчанию любой аргумент, который не является простым типом значения (как определено BeanUtils#isSimpleProperty) и не разрешен никаким другим преобразователем аргументов, обрабатывается так, как если бы он был аннотирован с помощью @ModelAttribute.
 	
 	
+@SessionAttributes
 	
-@SessionAttributes - аннотация, которая используется для хранения атрибутов модели в сеансе сервлета HTTP между запросами. Это аннотация уровня класса, которая объявляет атрибуты сеанса, используемые определенным контроллером. Обычно здесь перечислены имена атрибутов модели или типы атрибутов модели, которые должны быть сохранены в сеансе для последующих запросов на доступ.
+	@SessionAttributes - аннотация, которая используется для хранения атрибутов модели в сеансе сервлета HTTP между запросами. Это аннотация уровня класса, которая объявляет атрибуты сеанса, используемые определенным контроллером. Обычно здесь перечислены имена атрибутов модели или типы атрибутов модели, которые должны быть сохранены в сеансе для последующих запросов на доступ.
 
 		@Controller
 		@SessionAttributes("pet") 
@@ -173,8 +174,9 @@
 		}
 		
 		
-
-@SessionAttribute - используется, если вам нужен доступ к уже существующим атрибутам сеанса, которые управляются глобально (то есть вне контроллера — например, с помощью фильтра) и могут присутствовать или нет, как показано в следующем примере:
+@SessionAttribute
+	
+	@SessionAttribute - используется, если вам нужен доступ к уже существующим атрибутам сеанса, которые управляются глобально (то есть вне контроллера — например, с помощью фильтра) и могут присутствовать или нет, как показано в следующем примере:
 
 		@RequestMapping("/")
 		public String handle(@SessionAttribute User user) { 
@@ -186,9 +188,250 @@
 	Для временного хранения атрибутов модели в сеансе как части рабочего процесса контроллера рекомендуется использовать @ SessionAttributes, как описано в разделе @SessionAttributes.
 	
 
-@RequestAttribute - Аналогично @SessionAttribute, вы можете использовать аннотации @RequestAttribute для доступа к уже существующим атрибутам запроса, созданным ранее (например, с помощью фильтра сервлетов или HandlerInterceptor).
+
+@RequestAttribute
+	
+	@RequestAttribute - Аналогично @SessionAttribute, вы можете использовать аннотации @RequestAttribute для доступа к уже существующим атрибутам запроса, созданным ранее (например, с помощью фильтра сервлетов или HandlerInterceptor).
 
 		@GetMapping("/")
 		public String handle(@RequestAttribute Client client) { 
 			// ...
 		}
+		
+
+
+Redirect Attributes - перенаправление артибутов.	
+	
+	По умолчанию все атрибуты модели рассматриваются как переменные шаблона URI в URL-адресе перенаправления. Из остальных атрибутов те, которые являются примитивными типами или коллекциями или массивами примитивных типов, автоматически добавляются в качестве параметров запроса.
+		
+	Обратите внимание, что переменные шаблона URI из настоящего запроса автоматически становятся доступными при развертывании URL-адреса перенаправления, и вам не нужно явно добавлять их через Model или RedirectAttributes. В следующем примере показано, как определить перенаправление:
+			
+			@PostMapping("/files/{path}")
+			public String upload(...) {
+				// ...
+				return "redirect:files/{path}";
+			}
+	
+	Другой способ передачи данных в цель перенаправления - использование атрибутов flash. В отличие от других атрибутов перенаправления, атрибуты flash сохраняются в сеансе HTTP (и, следовательно, не отображаются в URL). Дополнительные сведения см. В разделе атрибуты Flash.
+
+
+Flash Attributes - Флеш артибуты
+
+	Атрибуты Flash позволяют одному запросу хранить атрибуты, предназначенные для использования в другом запросе. Это наиболее часто требуется при перенаправлении-например, шаблон Post-Redirect-Get. Атрибуты Flash временно сохраняются перед перенаправлением (обычно в сеансе), чтобы быть доступными для запроса после перенаправления и немедленно удаляются.
+		
+	Spring MVC имеет две основные абстракции в поддержку атрибутов flash. 
+	FlashMap 		- используется для хранения атрибутов flash.
+	FlashMapManager - используется для хранения, извлечения и управления экземплярами FlashMap.	
+		
+	Оба экземпляра FlashMap доступны из любого места в Spring MVC через статические методы в RequestContextUtils.	
+		
+Multipart		
+		
+	После включения функции MultipartResolver содержимое запросов POST с данными multipart/form-data  анализируется и становится доступным в качестве обычных параметров запроса. В следующем примере выполняется доступ к одному обычному полю формы и одному загруженному файлу:
+	
+			@Controller
+			public class FileUploadController {
+
+				@PostMapping("/form")
+				public String handleFormUpload(@RequestParam("name") String name,
+						@RequestParam("file") MultipartFile file) {
+
+					if (!file.isEmpty()) {
+						byte[] bytes = file.getBytes();
+						// хранить байты где-то
+						return "redirect:uploadSuccess";
+					}
+					return "redirect:uploadFailure";
+				}
+			}
+		
+	Объявление типа аргумента как List<MultipartFile> позволяет разрешить несколько файлов для одного и того же имени параметра.	
+		
+	Когда аннотация @RequestParam объявляется как Map<String, MultipartFile> или MultiValueMap<String, MultipartFile>, без имени параметра, указанного в аннотации, то карта заполняется составными файлами для каждого заданного имени параметра.	
+		
+	С помощью многопартийного синтаксического анализа Servlet 3.0 вы также можете объявить javax.сервлет.http.Part вместо спрингового MultipartFile, как аргумент метода или тип значения коллекции.	
+		
+	Можно также использовать составное содержимое как часть привязки данных к объекту команды. Например, поле формы и файл из предыдущего примера могут быть полями объекта формы, как показано в следующем примере:	
+		
+			class MyForm {
+
+			private String name;
+			private MultipartFile file;
+
+			// ...
+			}
+
+			@Controller
+			public class FileUploadController {
+
+				@PostMapping("/form")
+				public String handleFormUpload(MyForm form, BindingResult errors) {
+					if (!form.getFile().isEmpty()) {
+						byte[] bytes = form.getFile().getBytes();
+						// store the bytes somewhere
+						return "redirect:uploadSuccess";
+					}
+					return "redirect:uploadFailure";
+				}
+			}	
+			
+	Составные запросы также могут быть отправлены от клиентов, не являющихся браузерами, в сценарии службы RESTful. В следующем примере показан файл с JSON:		
+			
+				POST /someUrl
+				Content-Type: multipart/mixed
+
+				--edt7Tfrdusa7r3lNQc79vXuhIIMlatb7PQg7Vp
+				Content-Disposition: form-data; name="meta-data"
+				Content-Type: application/json; charset=UTF-8
+				Content-Transfer-Encoding: 8bit
+
+				{
+					"name": "value"
+				}
+				--edt7Tfrdusa7r3lNQc79vXuhIIMlatb7PQg7Vp
+				Content-Disposition: form-data; name="file-data"; filename="file.properties"
+				Content-Type: text/xml
+				Content-Transfer-Encoding: 8bit
+				... File Data ...
+			
+	Вы можете получить доступ к "meta-data" при помощи аннотации @RequestParam в виде строки, но вы, вероятно, захотите, чтобы она десериализовалась из JSON (аналогично @RequestBody). Используйте аннотацию @RequestPart для доступа к составной части после ее преобразования с помощью HttpMessageConverter:	
+			
+			@PostMapping("/")
+			public String handle(@RequestPart("meta-data") MetaData metadata,
+					@RequestPart("file-data") MultipartFile file) {
+				// ...
+			}		
+			
+	Вы можете использовать аннотацию @RequestPart в сочетании с javax.validation.Valid или использовать Спринговую аннотацию @Validated, которая вызывает стандартные проверки компонентов, которые будут применяться. По умолчанию ошибки проверки вызывают исключение MethodArgumentNotValidException, которое преобразуется в ответ 400 (BAD_REQUEST). Кроме того, можно обрабатывать ошибки проверки локально в контроллере с помощью аргумента Errors или BindingResult, как показано в следующем примере:		
+			
+			@PostMapping("/")
+			public String handle(@Valid @RequestPart("meta-data") MetaData metadata,
+					BindingResult result) {
+				// ...
+			}
+
+						
+@RequestBody			
+	
+	Аннотацию @RequestBody можно использовать для чтения и десериализации тела запроса в объект через HttpMessageConverter. В следующем примере используется аргумент @RequestBody:
+			
+			@PostMapping("/accounts")
+			public void handle(@RequestBody Account account) {
+				// ...
+			}
+	
+	Вы можете использовать опции Конвертера сообщений при  
+	
+	Вы можете использовать @RequestBody в сочетании с javax.validation.Valid  или Спринговой аннотации @Validated аннотации, которые вызывают стандартные проверки применяемых компонентов. По умолчанию ошибки проверки вызывают исключение MethodArgumentNotValidException, которое преобразуется в ответ 400 (BAD_REQUEST). Кроме того, можно обрабатывать ошибки проверки локально в контроллере с помощью аргумента Errors или BindingResult, как показано в следующем примере:	
+	
+			@PostMapping("/accounts")
+			public void handle(@Valid @RequestBody Account account, BindingResult result) {
+				// ...
+			}
+	
+HttpEntity	
+
+	Класс HttpEntity похож в использовании на аннотацию @RequestBody, но основан на объекте контейнера, который предоставляет заголовки и тело запроса. В следующем списке приведен пример:
+	
+			@PostMapping("/accounts")
+			public void handle(HttpEntity<Account> entity) {
+				// ...
+			}
+
+
+@ResponseBody
+		
+	Вы можете использовать аннотацию @ResponseBody для тех методов, которые возвращают сериализированный ответ в тело ответа через HttpMessageConverter. В следующем списке приведен пример:	
+			
+			@GetMapping("/accounts/{id}")
+			@ResponseBody
+			public Account handle() {
+				// ...
+			}
+					
+	Аннотация @ResponseBody может быть установлена на уровне класса, в этом случае она будет установлена для всех методов контроллера. Аналогичный эффект предоставляет аннотация @RestController, которая является не более чем мета-аннотацией, включающей аннотации @Controller и @ResponseBody.
+
+	Вы можете использовать @ResponseBody с реактивными типами. Дополнительные сведения см. в разделе  Asynchronous Requests и Reactive Types
+
+	Можно сгруппировать методы, использующие аннотацию @ResponseBody с сериализующимися в JSON представлениями. См. библиотеку Jackson JSON.
+				
+				
+ResponseEntity 					
+					
+	Тип данных ResponseEntity похож на @ResponseBody, но со статусом и заголовками. 
+	Например:
+		
+			@GetMapping("/something")
+			public ResponseEntity<String> handle() {
+				String body = ... ;
+				String etag = ... ;
+				return ResponseEntity.ok().eTag(etag).build(body);
+			}
+		
+	Spring MVC поддерживает использование реактивного типа с одним значением для асинхронного создания ResponseEntity и/или одно-и многозначных реактивных типов для тела.
+
+
+Jackson JSON
+		
+	Спринг предлагает поддержку для библиотеки Jackson в формате JSON 	
+		
+		
+JSON Views
+			
+	Spring MVC обеспечивает встроенную поддержку сериализуемых, средставми Jackson, представлений, которые позволяют отображать только множество полей в объекте. Чтобы использовать его с методами контроллера @ResponseBody или ResponseEntity, можно использовать аннотацию @Jsonview Джексона для активации класса представления сериализации, как показано в следующем примере:
+		
+			@RestController
+			public class UserController {
+
+				@GetMapping("/user")
+				@JsonView(User.WithoutPasswordView.class)
+				public User getUser() {
+					return new User("eric", "7!jd#h23");
+				}
+			}
+
+			public class User {
+
+				public interface WithoutPasswordView {};
+				public interface WithPasswordView extends WithoutPasswordView {};
+
+				private String username;
+				private String password;
+
+				public User() {
+				}
+
+				public User(String username, String password) {
+					this.username = username;
+					this.password = password;
+				}
+
+				@JsonView(WithoutPasswordView.class)
+				public String getUsername() {
+					return this.username;
+				}
+
+				@JsonView(WithPasswordView.class)
+				public String getPassword() {
+					return this.password;
+				}
+			}
+		
+	Аннотация @JsonView определяет массив классов представления, но вы можете указать только один метод для каждого контроллера. Если вам нужно активировать несколько представлений, вы можете использовать составной интерфейс.
+
+	Для контроллеров, использующих разрешение представления, можно добавить класс представления сериализации в модель, как показано в следующем примере:
+	
+			@Controller
+			public class UserController extends AbstractController {
+
+				@GetMapping("/user")
+				public String getUser(Model model) {
+					model.addAttribute("user", new User("eric", "7!jd#h23"));
+					model.addAttribute(JsonView.class.getName(), User.WithoutPasswordView.class);
+					return "userView";
+				}
+			}
+
+
+
+	

@@ -1,0 +1,42 @@
+Model
+	
+	Вы можете использовать аннотацию @ModelAttribute:
+		- для аргумента метода в @RequestMapping методах для создания нового объекта или доступа к  существующему объекту из модели и привязать его к запросу через WebDataBinder
+		- В качестве аннотации уровня метода в классах @Controller или @ControllerAdvice, которые помогают инициализировать модель до любого вызова метода @RequestMapping.
+		- В методе @RequestMapping для пометки его возвращаемого значения, использующего атрибут модели.
+
+	Контроллер может иметь любое количество методов @ModelAttribute. Все такие методы вызываются перед @RequestMapping методом в том же контроллере. Метод @ModelAttribute также может совместно использоваться контроллерами через @ControllerAdvice. Дополнительную информацию см. В разделе Controller Advice.
+	
+	Методы @ ModelAttribute имеют гибкие сигнатуры методов. Они поддерживают многие из тех же аргументов, что и методы @RequestMapping, за исключением самого @ModelAttribute или всего, что связано с телом запроса.
+	
+	В следующем примере показан метод @ModelAttribute:
+	
+			@ModelAttribute
+			public void populateModel(@RequestParam String number, Model model) {
+				model.addAttribute(accountRepository.findAccount(number));
+				// add more ...
+			}
+	
+	В следующем примере добавляется только один атрибут:
+	
+			@ModelAttribute
+			public Account addAccount(@RequestParam String number) {
+				return accountRepository.findAccount(number);
+			}
+				
+	Если имя явно не указано, оно выбирается на основе типа объекта, как описано в конвенции Javadoc. Вы всегда можете назначить явное имя с помощью перегруженного метода addAttribute или через атрибут name на @ModelAttribute (для возвращаемого значения).
+	
+	Вы также можете использовать @ModelAttribute в качестве аннотации на уровне метода для методов @RequestMapping, и в этом случае возвращаемое значение метода @RequestMapping интерпретируется как атрибут модели. Это обычно не требуется, так как это поведение по умолчанию в контроллерах HTML, если возвращаемое значение не является строкой, которая в противном случае интерпретировалась бы как имя представления. @ModelAttribute также можно настроить имя атрибута модели, как показано в следующем примере:
+	
+			@GetMapping("/accounts/{id}")
+			@ModelAttribute("myAccount")
+			public Account handle() {
+				// ...
+				return account;
+			}
+			
+	
+	
+	
+	
+	
