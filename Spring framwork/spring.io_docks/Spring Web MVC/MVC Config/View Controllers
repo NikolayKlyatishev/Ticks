@@ -1,0 +1,14 @@
+View Controllers
+
+	Это ярлык для определения ParameterizableViewController, который сразу же переходит к представлению при вызове. Вы можете использовать его в статических случаях, когда нет логики контроллера Java для выполнения до того, как представление генерирует ответ.
+
+	В следующем примере конфигурации Java перенаправляется запрос на / в представление с именем home:
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void addViewControllers(ViewControllerRegistry registry) {
+				registry.addViewController("/").setViewName("home");
+			}
+		}

@@ -1,0 +1,30 @@
+Default Servlet
+
+	Spring MVC позволяет сопоставлять DispatcherServlet с / (таким образом, переопределяя сопоставление сервлета по умолчанию контейнера), в то же время позволяя обрабатывать статические запросы ресурсов сервлетом по умолчанию контейнера. Он настраивает DefaultServletHttpRequestHandler с сопоставления URL-адрес /** и самый низкий приоритет по отношению к другим сопоставления URL-адресов.
+
+	Этот обработчик пересылает все запросы к сервлету по умолчанию. Поэтому он должен оставаться последним в порядке всех других url HandlerMappings. Это происходит, если вы используете <MVC:аннотации-driven>. Кроме того, если вы настроили собственный настроенный экземпляр HandlerMapping, убедитесь, что его свойство order имеет значение ниже, чем значение DefaultServletHttpRequestHandler, которое является целым числом.МАКСИМАЛЬНОЕ ЗНАЧЕНИЕ.
+	
+		В следующем примере показано, как включить эту функцию с помощью установки по умолчанию :
+		
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+				configurer.enable();
+			}
+		}
+	
+	Предостережение для переопределения сопоставления / Servlet заключается в том, что RequestDispatcher для сервлета по умолчанию должен быть получен по имени, а не по пути. DefaultServletHttpRequestHandler пытается автоматически определить сервлет по умолчанию для контейнера во время запуска, используя список известных имен для большинства основных контейнеров сервлетов (включая Tomcat, Jetty, GlassFish, JBoss, Resin, WebLogic и WebSphere). Если сервлет по умолчанию был настроен с другим именем, или если используется другой контейнер сервлета, где имя сервлета по умолчанию неизвестно, то необходимо явно указать имя сервлета по умолчанию, как показано в следующем примере:
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+				configurer.enable("myCustomDefaultServlet");
+			}
+
+		}

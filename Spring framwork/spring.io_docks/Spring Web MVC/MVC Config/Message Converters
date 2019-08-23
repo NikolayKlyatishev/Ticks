@@ -1,0 +1,26 @@
+Message Converters - преобразователи сообщений
+
+	Вы можете настроить HttpMessageConverter в конфигурации Java переопределение configureMessageConverters() (заменить конвертеры по умолчанию, созданный Spring MVC) или путем переопределения extendMessageConverters() (для настройки конверторов по умолчанию или добавить дополнительные конвертеры по умолчанию).
+	
+	В следующем примере добавляется XML и Jackson JSON преобразователи с индивидуальным ObjectMapper, а не по умолчанию
+		@Configuration
+		@EnableWebMvc
+		public class WebConfiguration implements WebMvcConfigurer {
+
+			@Override
+			public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+				Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder()
+						.indentOutput(true)
+						.dateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+						.modulesToInstall(new ParameterNamesModule());
+				converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
+				converters.add(new MappingJackson2XmlHttpMessageConverter(builder.createXmlMapper(true).build()));
+			}
+		}
+	В предыдущем примере Jackson2ObjectMapperBuilder используется для создания общей конфигурации как для MappingJackson2HttpMessageConverter, так и для MappingJackson2XmlHttpMessageConverter с включенным отступом, настраиваемым форматом даты и регистрацией jackson-module-parameter-names, которая добавляет поддержку доступа к именам параметров (функция, добавленная в Java 8).
+	
+	Этот конструктор настраивает свойства Джексона по умолчанию следующим образом:
+		DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES is disabled.
+		MapperFeature.DEFAULT_VIEW_INCLUSION is disabled.
+		
+	

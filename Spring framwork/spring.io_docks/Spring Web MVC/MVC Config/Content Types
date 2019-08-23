@@ -1,0 +1,19 @@
+Content Types - типы данных
+
+	Вы можете настроить, как Spring MVC определяет запрошенные типы носителей из запроса (например, заголовок Accept, расширение пути URL, параметр запроса и другие).
+	По умолчанию сначала проверяется расширение пути URL — адреса-с JSON, xml, rss и atom, зарегистрированными как известные расширения (в зависимости от зависимостей classpath). Заголовок Accept проверяется вторым.
+	Рассмотрите возможность изменения этих значений по умолчанию, чтобы принять только заголовок, и, если необходимо использовать разрешение типа контента на основе URL, рассмотрите возможность использования стратегии параметров запроса над расширениями пути. См. Suffix Match и Suffix Match and RFD для получения более подробной информации.
+	В конфигурации Java можно настроить разрешение запрашиваемого типа контента, как показано в следующем примере
+			
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+				configurer.mediaType("json", MediaType.APPLICATION_JSON);
+				configurer.mediaType("xml", MediaType.APPLICATION_XML);
+			}
+		}
+	
+	

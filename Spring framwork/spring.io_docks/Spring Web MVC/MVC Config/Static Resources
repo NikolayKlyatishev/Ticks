@@ -1,0 +1,37 @@
+Static Resources
+
+	Этот параметр обеспечивает удобный способ обслуживания статических ресурсов из списка расположений на основе ресурсов.
+
+	В следующем примере, Учитывая запрос, который начинается с /resources, относительный путь используется для поиска и обслуживания статических ресурсов относительно /public в корневом каталоге веб-приложения или в пути к классам в /static. Ресурсы обслуживаются с годичным будущим сроком действия, чтобы обеспечить максимальное использование кэша браузера и сокращение HTTP-запросов, выполняемых браузером. Последний измененный заголовок также оценивается и, если он присутствует, возвращается код состояния 304.
+	
+	В следующем списке показано, как это сделать с конфигурацией Java:
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void addResourceHandlers(ResourceHandlerRegistry registry) {
+				registry.addResourceHandler("/resources/**")
+					.addResourceLocations("/public", "classpath:/static/")
+					.setCachePeriod(31556926);
+			}
+		}
+	
+	Обработчик ресурсов также поддерживает цепочку реализаций ResourceResolver и resourcetransformer, которые можно использовать для создания цепочки инструментов для работы с оптимизированными ресурсами.
+
+	Вы можете использовать VersionResourceResolver для версионных URL-адресов ресурсов на основе хэша MD5, вычисленного из содержимого, фиксированной версии приложения или другого. ContentVersionStrategy (MD5 hash) является хорошим выбором — с некоторыми заметными исключениями, такими как ресурсы JavaScript, используемые с загрузчиком модулей.
+	
+	В следующем примере показано, как использовать VersionResourceResolver в конфигурации Java:
+		
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void addResourceHandlers(ResourceHandlerRegistry registry) {
+				registry.addResourceHandler("/resources/**")
+						.addResourceLocations("/public/")
+						.resourceChain(true)
+						.addResolver(new VersionResourceResolver().addContentVersionStrategy("/**"));
+			}
+		}

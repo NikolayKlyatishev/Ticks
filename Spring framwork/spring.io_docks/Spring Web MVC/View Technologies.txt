@@ -1,0 +1,91 @@
+ View Technologies
+ 
+Использование технологий просмотра в Spring MVC является модульным, независимо от выбранной технологии, будь то шаблоны разметки Thymeleaf, Groovy, JSP или другие технологии, и в первую очередь зависит от изменения конфигурации. В этой главе рассматриваются технологии View, интегрированные с Spring MVC. Мы предполагаем, что вы уже знакомы с View Resolution.
+
+
+Thymeleaf
+
+	Thymeleaf-это современный серверный механизм шаблонов Java, который подчеркивает естественные шаблоны HTML, которые можно просмотреть в браузере двойным щелчком, что очень полезно для независимой работы с шаблонами пользовательского интерфейса (например, дизайнером) без необходимости в работающем сервере. Если вы хотите заменить JSP, Thymeleaf предлагает один из самых обширных наборов функций, чтобы сделать такой переход проще. Thymeleaf активно развивается и поддерживается. Более полное введение см. на домашней странице проекта Thymeleaf.
+	
+	Интеграция Thymeleaf с Spring MVC управляется проектом Thymeleaf. Конфигурация включает несколько объявлений компонентов, таких как ServletContextTemplateResolver, SpringTemplateEngine и ThymeleafViewResolver. См. Thymeleaf + Spring для получения более подробной информации.
+	
+	
+FreeMarker
+
+	Apache FreeMarker-это шаблонный движок для создания любого вида текстового вывода из HTML в электронную почту и другие. Spring Framework имеет встроенную интеграцию для использования Spring MVC с шаблонами FreeMarker.
+	
+	View Configuration
+	
+	В следующем примере показано, как настроить FreeMarker в качестве технологии представления:
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void configureViewResolvers(ViewResolverRegistry registry) {
+				registry.freemarker();
+			}
+
+			// Configure FreeMarker...
+			@Bean
+			public FreeMarkerConfigurer freeMarkerConfigurer() {
+				FreeMarkerConfigurer configurer = new FreeMarkerConfigurer();
+				configurer.setTemplateLoaderPath("/WEB-INF/freemarker");
+				return configurer;
+			}
+		}
+		
+	Ваши шаблоны должны храниться в каталоге, указанном FreeMarkerConfigurer, показанном в предыдущем примере. Учитывая предыдущую конфигурацию, если ваш контроллер возвращает имя представления welcome, Resolver ищет шаблон /WEB-INF/freemarker/welcome.ftl	
+		
+	FreeMarker Configuration	
+	
+	Вы можете передать FreeMarker 'Settings' и 'SharedVariables' непосредственно объекту конфигурации FreeMarker (который управляется Spring), установив соответствующие свойства компонента на компоненте FreeMarkerConfigurer. Свойство freemarkerSettings требуется для Java.утиль.Свойства объекта, и свойство freemarkerVariables требует java.утиль.Карта. В следующем примере показано, как это сделать:	
+		
+			<bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+				<property name="templateLoaderPath" value="/WEB-INF/freemarker/"/>
+				<property name="freemarkerVariables">
+					<map>
+						<entry key="xml_escape" value-ref="fmXmlEscape"/>
+					</map>
+				</property>
+			</bean>
+			<bean id="fmXmlEscape" class="freemarker.template.utility.XmlEscape"/>
+	
+	Подробные сведения о параметрах и переменных, применяемых к объекту конфигурации, см. В документации FreeMarker.	
+		
+	Form Handling
+	
+	Spring предоставляет библиотеку тегов для использования в JSP, которая содержит, среди прочего, элемент <spring:bind/>. Этот элемент в первую очередь позволяет формам отображать значения из объектов поддержки форм и показывать результаты неудачных проверок от валидатора на веб-или бизнес-уровне. Spring также имеет поддержку той же функциональности в FreeMarker, с допо	лнительным удобством макросов для генерации самих элементов ввода формы.	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

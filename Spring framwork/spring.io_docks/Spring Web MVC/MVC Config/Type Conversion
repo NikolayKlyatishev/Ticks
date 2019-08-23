@@ -1,0 +1,16 @@
+Type Conversion
+
+	По умолчанию устанавливаются форматеры для типов Number и Date, включая поддержку аннотаций @NumberFormat и @DateTimeFormat. Полная поддержка библиотеки форматирования Joda-Time также устанавливается, если Joda-Time присутствует в пути к классам.
+	
+	В конфигурации Java можно зарегистрировать пользовательские форматеры и конвертеры, как показано в следующем примере:
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void addFormatters(FormatterRegistry registry) {
+				// ...
+			}
+		}	
+		
+	Дополнительные сведения о том, когда следует использовать реализации FormatterRegistrar, см. В SPI FormatterRegistrar и FormattingConversionServiceFactorybean.

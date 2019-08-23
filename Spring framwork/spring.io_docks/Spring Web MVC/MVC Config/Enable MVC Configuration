@@ -1,0 +1,66 @@
+Enable MVC Configuration
+
+	В конфигурации Java можно использовать аннотацию @EnableWebMvc для включения конфигурации MVC, как показано в следующем примере
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig {
+			// ...
+		}
+		
+	В конфигурации XML можно использовать элемент <mvc:annotation-driven> для включения конфигурации MVC, как показано в следующем примере:
+		
+		<?xml version="1.0" encoding="UTF-8"?>
+		<beans xmlns="http://www.springframework.org/schema/beans"
+			xmlns:mvc="http://www.springframework.org/schema/mvc"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="
+				http://www.springframework.org/schema/beans
+				https://www.springframework.org/schema/beans/spring-beans.xsd
+				http://www.springframework.org/schema/mvc
+				https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+			<mvc:annotation-driven/>
+
+		</beans>
+		
+	В предыдущем примере регистрируется ряд компонентов инфраструктуры Spring MVC и выполняется адаптация к зависимостям, доступным в пути к классам (например, преобразователи полезных данных для JSON, XML и других).
+	
+	MVC Config API
+	
+	В конфигурации Java можно реализовать интерфейс WebMvcConfigurer, как показано в следующем примере:
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			// Implement configuration methods...
+		}
+	
+	В XML можно проверить атрибуты и подэлементы <mvc: annotation-driven/>. Вы можете просмотреть XML-схему Spring MVC или использовать функцию завершения кода вашей IDE, чтобы узнать, какие атрибуты и подэлементы доступны.		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

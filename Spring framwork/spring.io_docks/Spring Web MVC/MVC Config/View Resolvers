@@ -1,0 +1,35 @@
+ View Resolvers
+ 
+	Конфигурация MVC упрощает регистрацию преобразователей вида View Resolvers.
+	В следующем примере конфигурации Java настраивается разрешение представления согласования содержимого с помощью JSP и Jackson в качестве представления по умолчанию для отрисовки JSON:
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void configureViewResolvers(ViewResolverRegistry registry) {
+				registry.enableContentNegotiation(new MappingJackson2JsonView());
+				registry.jsp();
+			}
+		}
+		
+	В конфигурации Java можно добавить соответствующий компонент конфигуратора, как показано в следующем примере:
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void configureViewResolvers(ViewResolverRegistry registry) {
+				registry.enableContentNegotiation(new MappingJackson2JsonView());
+				registry.freeMarker().cache(false);
+			}
+
+			@Bean
+			public FreeMarkerConfigurer freeMarkerConfigurer() {
+				FreeMarkerConfigurer configurer = new FreeMarkerConfigurer();
+				configurer.setTemplateLoaderPath("/freemarker");
+				return configurer;
+			}
+		}

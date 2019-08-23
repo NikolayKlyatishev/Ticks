@@ -1,0 +1,226 @@
+URI Links - ссылки URI
+
+	В этом разделе описаны различные опции, доступные в Spring Framework для работы с URI
+	
+	
+UriComponents
+
+	UriComponentsBuilder помогает создавать URI из шаблонов URI с переменными, как показано в следующем примере:
+	
+		UriComponents uriComponents = UriComponentsBuilder
+			.fromUriString("https://example.com/hotels/{hotel}")	// Статический метод фабрики с шаблоном URI.
+			.queryParam("q", "{q}")  		// Добавление или замена компонентов URI.
+			.encode() 						// Запрос на кодирование шаблона URI и переменных URI.
+			.build(); 						// Постройте UriComponents.
+
+		URI uri = uriComponents.expand("Westin", "123").toUri();  	// Разверните переменные и получите URI.
+		
+	Предыдущий пример можно объединить в одну цепочку и сократить с помощью buildAndExpand, как показано в следующем примере:
+	
+		URI uri = UriComponentsBuilder
+			.fromUriString("https://example.com/hotels/{hotel}")
+			.queryParam("q", "{q}")
+			.encode()
+			.buildAndExpand("Westin", "123")
+			.toUri();
+			
+	Вы можете сократить его дальше, перейдя непосредственно к URI (что подразумевает кодирование), как показано в следующем примере:
+	
+		URI uri = UriComponentsBuilder
+			.fromUriString("https://example.com/hotels/{hotel}")
+			.queryParam("q", "{q}")
+			.build("Westin", "123");
+	
+	Вы сокращаете его еще больше с помощью полного шаблона URI, как показано в следующем примере:
+	
+		URI uri = UriComponentsBuilder
+			.fromUriString("https://example.com/hotels/{hotel}?q={q}")
+			.build("Westin", "123");
+		
+
+UriBuilder
+			
+	UriComponentsBuilder реализует UriBuilder. Вы можете получить UriBuilder из UriBuilderFactory.  UriBuilderFactory и UriBuilder вместе предоставляют подключаемый механизм для создания URI из шаблонов URI на основе общей конфигурации, например, базовый URL-адрес, параметры кодирования и т.д.
+	
+	Вы можете сконфигурировать RestTemplate и WebClient с UriBuilderFactory и настроить подготовку ссылок URI. DefaultUriBuilderFactory это стандартная реализация UriBuilderFactory которая внутри использует UriComponentsBuilder и предоставляет общие параметры конфигурации.
+	
+	Следующий пример демонстрирует, как сконфигурировать RestTemplate:
+	
+		// import org.springframework.web.util.DefaultUriBuilderFactory.EncodingMode;
+
+		String baseUrl = "https://example.org";
+		DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(baseUrl);
+		factory.setEncodingMode(EncodingMode.TEMPLATE_AND_VARIABLES);
+
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setUriTemplateHandler(factory);
+		
+	Следующий пример демонстрирует, как сконфигурировать WebClient:
+	
+		// import org.springframework.web.util.DefaultUriBuilderFactory.EncodingMode;
+
+		String baseUrl = "https://example.org";
+		DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(baseUrl);
+		factory.setEncodingMode(EncodingMode.TEMPLATE_AND_VARIABLES);
+
+		WebClient client = WebClient.builder().uriBuilderFactory(factory).build();
+	
+	Вы можете использовать DefaultUriBuilderFactory напрямую. Это похоже на использование UriComponentsBuilder, но вместо статического фабричного метода используется фактический экземпляр, который содержит конфигурацию и настройки, как показано в следующем примере:
+	
+		String baseUrl = "https://example.com";
+		DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory(baseUrl);
+
+		URI uri = uriBuilderFactory.uriString("/hotels/{hotel}")
+				.queryParam("q", "{q}")
+				.build("Westin", "123");
+				
+	
+	
+URI Encoding - Кодирование URI
+	
+	UriComponentsBuilder предоставляет возможность кодирования на двух уровнях:
+		- UriComponentsBuilder#encode(): сначала предварительно кодирует шаблон URI, а затем строго кодирует переменные URI при развертывании.
+		- UriComponents#encode(): кодирует компоненты URI после расширения переменных URI.
+	
+	Оба варианта заменяют не ASCII и незаконные символы экранированными октетами. Однако первый вариант также заменяет символы с зарезервированным значением, которые появляются в переменных URI.
+	
+	Рассмотрим ";", который является допустимым в пути, но имеет зарезервированное значение. Первый параметр заменяет ";" на "%3B" в переменных URI, но не в шаблоне URI. Напротив, второй вариант никогда не заменяет ";", поскольку он является допустимым символом в пути.
+	
+	В большинстве случаев первый вариант, скорее всего, даст ожидаемый результат, поскольку он рассматривает переменные URI как непрозрачные данные, которые должны быть полностью закодированы, в то время как вариант 2 полезен только в том случае, если переменные URI намеренно содержат зарезервированные символы.
+	
+	В следующем примере используется первый вариант:
+	
+		URI uri = UriComponentsBuilder.fromPath("/hotel list/{city}")
+            .queryParam("q", "{q}")
+            .encode()
+            .buildAndExpand("New York", "foo+bar")
+            .toUri();
+
+		// Result is "/hotel%20list/New%20York?q=foo%2Bbar"
+	
+	Вы можете сократить предыдущий пример, перейдя непосредственно к URI( что подразумевает кодирование), как показано в следующем примере:
+		
+		RI uri = UriComponentsBuilder.fromPath("/hotel list/{city}")
+            .queryParam("q", "{q}")
+            .build("New York", "foo+bar")
+			
+	Вы можете сократить его еще больше с помощью полного шаблона URI, как показано в следующем примере:
+	
+		URI uri = UriComponentsBuilder.fromPath("/hotel list/{city}?q={q}")
+            .build("New York", "foo+bar")
+	
+	WebClient и RestTemplate расширяют и кодируют шаблоны URI внутренне используя UriBuilderFactory. Оба могут быть настроены с помощью пользовательской стратегии, как показано в следующем примере:
+	
+		String baseUrl = "https://example.com";
+		DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory(baseUrl)
+		factory.setEncodingMode(EncodingMode.TEMPLATE_AND_VALUES);
+
+		// Customize the RestTemplate..
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setUriTemplateHandler(factory);
+
+		// Customize the WebClient..
+		WebClient client = WebClient.builder().uriBuilderFactory(factory).build();
+	
+	
+	Реализация DefaultUriBuilderFactory использует UriComponentsBuilder внутренне для расширения и кодирования шаблонов URI. Как фабрика, он обеспечивает одно место для настройки подхода к кодированию, основанного на одном из следующих режимов кодирования:
+	
+		- TEMPLATE_AND_VALUES: использует UriComponentsBuilder#encode(), соответствующий первому параметру в предыдущем списке, для предварительного кодирования шаблона URI и строгого кодирования переменных URI при расширении.
+		- VALUES_ONLY: не кодирует шаблон URI и вместо этого применяет строгое кодирование к переменным URI через UriUtils#encodeUriUriVariables перед их расширением в шаблон.
+		- URI_COMPONENTS: использует UriComponents#encode(), соответствующий второму параметру в предыдущем списке, для кодирования значения компонента URI после расширения переменных URI.
+		- NONE: кодировка не применяется.
+	
+	RestTemplate имеет значение EncodingMode.URI_COMPONENTS по историческим причинам и для обратной совместимости. WebClient полагается на значение по умолчанию в DefaultUriBuilderFactory, которое было изменено из EncodingMode.URI_COMPONENTS в 5.0.x к EncodingMode.TEMPLATE_AND_VALUES в 5.1.
+
+	
+Relative Servlet Requests - относительный запросы сервлетов
+
+	Вы можете использовать ServletUriComponentsBuilder для создания URI относительно текущего запроса, как показано в следующем примере:
+	
+		HttpServletRequest request = ...
+
+		// повторное использование host, scheme, port, path and query string...
+		ServletUriComponentsBuilder ucb = ServletUriComponentsBuilder.fromRequest(request)
+				.replaceQueryParam("accountId", "{id}").build()
+				.expand("123")
+				.encode();
+	
+	Можно создать URI относительно пути контекста, как показано в следующем примере:
+	
+		// повторное использование  host, port and context path...
+		ServletUriComponentsBuilder ucb = ServletUriComponentsBuilder.fromContextPath(request)
+				.path("/accounts").build()
+	
+	Можно создать URI относительно сервлета (например, /main/*), как показано в следующем примере:
+		
+		// повторное использование host, port, context path, and Servlet prefix...
+		ServletUriComponentsBuilder ucb = ServletUriComponentsBuilder.fromServletMapping(request)
+				.path("/accounts").build()
+			
+	Начиная с версии 5.1, ServletUriComponentsBuilder игнорирует информацию из заголовков Forwarded и X-Forwarded -*, которые указывают адрес, созданный клиентом. Рассмотрите возможность использования фильтра ForwardedHeaderFilter для извлечения и использования или удаления таких заголовков.
+	
+	
+	
+Links to Controllers - Ссылки на контроллеры	
+	
+	Spring MVC предоставляет механизм для подготовки ссылок на методы контроллера. Например, следующий контроллер MVC позволяет создавать ссылки:
+		
+		@Controller
+		@RequestMapping("/hotels/{hotel}")
+		public class BookingController {
+
+			@GetMapping("/bookings/{booking}")
+			public ModelAndView getBooking(@PathVariable Long booking) {
+				// ...
+			}
+		}
+			
+	Можно подготовить ссылку, обратившись к методу по имени, как показано в следующем примере:
+	
+		UriComponents uriComponents = MvcUriComponentsBuilder
+			.fromMethodName(BookingController.class, "getBooking", 21).buildAndExpand(42);
+
+		URI uri = uriComponents.encode().toUri();
+	
+	В предыдущем примере мы предоставляем фактические значения аргументов метода (в данном случае long value: 21), которые будут использоваться в качестве переменной пути и вставляться в URL. Кроме того, мы предоставляем значение 42 для заполнения любых оставшихся переменных URI, таких как переменная hotel, унаследованная от сопоставления запросов на уровне типа. Если этот метод имеет несколько аргументов, мы смогли поставить нулевые аргументы не нужны для URL-адреса. В общем случае для построения URL-адреса релевантны только аргументы @PathVariable и @RequestParam.
+	
+	Существуют дополнительные способы использования MvcUriComponentsBuilder. Например, вы можете использовать метод, похожий на макет тестирования через прокси, чтобы избежать ссылки на метод контроллера по имени, как показано в следующем примере (Пример предполагает статический импорт MvcUriComponentsBuilder.on)
+	
+		UriComponents uriComponents = MvcUriComponentsBuilder
+			.fromMethodCall(on(BookingController.class).getBooking(21)).buildAndExpand(42);
+
+		URI uri = uriComponents.encode().toUri();
+		
+
+Links in Views
+		
+	В таких представлениях, как Thymeleaf, FreeMarker или JSP, можно создавать ссылки на аннотированные контроллеры, ссылаясь на неявно или явно Назначенное имя для каждого сопоставления запросов
+	
+		@RequestMapping("/people/{id}/addresses")
+		public class PersonAddressController {
+
+			@RequestMapping("/{country}")
+			public HttpEntity getAddress(@PathVariable String country) { ... }
+		}
+			
+	Учитывая предыдущий контроллер, вы можете подготовить ссылку из JSP следующим образом:
+	
+		<%@ taglib uri="http://www.springframework.org/tags" prefix="s" %>
+		...
+		<a href="${s:mvcUrl('PAC#getAddress').arg(0,'US').buildAndExpand('123')}">Get Address</a>
+	
+	
+	В предыдущем примере используется функция mvcUrl, объявленная в библиотеке тегов Spring (т. е. META-INF/spring.tld), но легко определить свою собственную функцию или подготовить аналогичную для других технологий шаблонов.
+	
+	Вот как это работает. При запуске каждому @RequestMapping присваивается имя по умолчанию через HandlerMethodMappingNamingStrategy, реализация которого по умолчанию использует заглавные буквы класса и имя метода (например, метод getThing в ThingController становится "TC#getting"). Если есть конфликт имен, вы можете использовать @RequestMapping(name="..") чтобы назначить явное имя или реализовать свой собственный HandlerMethodMappingNamingStrategy.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

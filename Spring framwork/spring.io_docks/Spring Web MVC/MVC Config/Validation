@@ -1,0 +1,31 @@
+Validation
+
+	По умолчанию, если проверка Bean присутствует в пути к классу (например, Hibernate Validator), LocalValidatorFactoryBean регистрируется как глобальный валидатор для использования с аргументами метода @Valid и Validated on controller.
+
+	В конфигурации Java можно настроить экземпляр глобального Validator, как показано в следующем примере:
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public Validator getValidator(); {
+				// ...
+			}
+		}
+		
+	Обратите внимание, что вы также можете зарегистрировать реализации Validator  локально, как показано в следующем примере
+	
+		@Controller
+		public class MyController {
+
+			@InitBinder
+			protected void initBinder(WebDataBinder binder) {
+				binder.addValidators(new FooValidator());
+			}
+
+		}
+		
+	Если вам нужно где-то ввести LocalValidatorFactoryBean, создайте Bean и отметьте его с помощью @Primary, чтобы избежать конфликта с тем, который объявлен в конфигурации MVC
+	
+	
