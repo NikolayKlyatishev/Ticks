@@ -57,20 +57,85 @@ FreeMarker
 	Form Handling
 	
 	Spring предоставляет библиотеку тегов для использования в JSP, которая содержит, среди прочего, элемент <spring:bind/>. Этот элемент в первую очередь позволяет формам отображать значения из объектов поддержки форм и показывать результаты неудачных проверок от валидатора на веб-или бизнес-уровне. Spring также имеет поддержку той же функциональности в FreeMarker, с допо	лнительным удобством макросов для генерации самих элементов ввода формы.	
+
+
+		
+Script Views		
+	Spring Framework в Spring MVC имеет встроенную поддержку использования любой библиотеки шаблонов, которая может работать поверх JSR-223 Java scripting engine.
+		
+	Основное правило для интеграции любого другого механизма сценариев заключается в том, что он должен реализовывать интерфейсы ScriptEngine и Invocable.	
 		
 		
+	Requirements - требования:
+	У вас должен быть движок скрипта на вашем пути к классам, детали которого зависят от движка скрипта:
+		- Движок Nashorn JavaScript поставляется с Java 8+.
+		- Для поддержки Ruby должны быть добавлены зависимости JRuby.
+		- Для поддержки Python должны быть добавлены зависимости Jython.
+		- зависимость org.jetbrains.kotlin:kotlin-script-util и файл META-INF/services/javax.script.ScriptEngineFactory, содержащий строку org.jetbrains.kotlin.script.jsr223.KotlinJsr223JvmLocalScriptEngineFactory должны быть добавлены для поддержки скриптов Kotlin.
 		
+	Для использования библиотек сценариев js вам необходимо подключить библиотеку. Сделать это можно используя WebJars. 
+	
+	
+	Script Templates скриптовые сценарии.
+	Можно объявить компонент ScriptTemplateConfigurer, чтобы указать используемый механизм скриптов, загружаемые файлы скриптов, вызываемые функции для отображения шаблонов и т.д. В следующем примере используются шаблоны Mustache и движок Nashorn JavaScript:
+	
+		@Configuration
+		@EnableWebMvc
+		public class WebConfig implements WebMvcConfigurer {
+
+			@Override
+			public void configureViewResolvers(ViewResolverRegistry registry) {
+				registry.scriptTemplate();
+			}
+
+			@Bean
+			public ScriptTemplateConfigurer configurer() {
+				ScriptTemplateConfigurer configurer = new ScriptTemplateConfigurer();
+				configurer.setEngineName("nashorn");
+				configurer.setScripts("mustache.js");
+				configurer.setRenderObject("Mustache");
+				configurer.setRenderFunction("render");
+				return configurer;
+			}
+		}
+	
+	Контроллер выглядит одинаково как для конфигураций Java так и XML, как показано в следующем примере:
+	
+		@Controller
+		public class SampleController {
+
+			@GetMapping("/sample")
+			public String test(Model model) {
+				model.addObject("title", "Sample title");
+				model.addObject("body", "Sample body");
+				return "template";
+			}
+		}
+			
+	Функция render вызывается со следующими параметрами:
+	
+		- String template: содержимое шаблона
+		- Map model: модели представления 
+		- RenderingContext renderingContext: RenderingContext, предоставляющий доступ к контексту приложения, языковому стандарту, загрузчику шаблонов и URL-адресу (начиная с версии 5.0)
+	
+	Mustache.render() изначально совместим с этой сигнатурой, поэтому вы можете вызвать ее напрямую.
+			
+
+Jackson		
+	
+	Spring официально поддерживает библиотеку Jackson.
 		
+	Джексон-основанные представления JSON MVC
+	MappingJackson2JsonView использует ObjectMapper библиотеки Джексона для отображения ответа в формате JSON. По умолчанию все содержимое из карты модели (за исключением классов, специфичных для фреймворка) кодируется в JSON. Для случаев, когда содержимое карты необходимо отфильтровать, можно указать определенный набор атрибутов модели для кодирования с помощью свойства modelKeys. Кроме того, можно использовать свойство extractValueFromSingleKeyModel для извлечения и сериализации значения в моделях с одним ключом напрямую, а не в виде карты атрибутов модели	
 		
+	Вы можете настроить отображение JSON по мере необходимости с помощью предоставленных Jackson аннотаций. Если требуется дополнительный контроль, можно ввести пользовательский ObjectMapper через свойство ObjectMapper для случаев, когда необходимо предоставить пользовательские сериализаторы JSON и десериализаторы для определенных типов.	
 		
-		
-		
-		
-		
-		
-		
-		
-		
+	
+	Представления XML на основе Джексона
+	
+	MappingJackson2XmlView использует xmlmapper расширения Jackson XML для отображения содержимого ответа в виде XML. Если модель содержит несколько записей, необходимо явно задать объект для сериализации с помощью свойства modelkey bean. Если модель содержит одну запись, она сериализуется автоматически.
+
+	Вы можете настроить отображение XML по мере необходимости с помощью предоставленных аннотаций JAXB или Jackson. Если требуется дополнительный контроль, можно внедрить пользовательский XmlMapper через свойство ObjectMapper для случаев, когда пользовательский XML необходимо предоставить сериализаторы и десериализаторы для определенных типов.
 		
 		
 		
