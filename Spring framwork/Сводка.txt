@@ -1,0 +1,92 @@
+
+Состав Spring MVC (5.1):
+	1. Dispatcher Servlet - сервлет, предоставляющий алгоритм обработки запросов. 
+	
+	
+	
+	
+-----------------------------------------------------------------------------------	
+DISPATCHER SERVLET
+
+
+	Dispatcher Servlet - сервлет, предоставляющий алгоритм обработки запросов. Может быть объявлен как в web.xml, так и при помощи java-конфигурации. Dispatcher servlet использует конфигурацию Spring для поиска используемых компонентов, таких как обработчики сопоставления запросов, обработчики испключений и т.д.
+	
+	Пример инициализации DispatcherServlet:
+	
+		public class MyWebApplicationInitializer implements WebApplicationInitializer {
+
+			@Override
+			public void onStartup(ServletContext servletCxt) {
+
+				// Загрузка конфигурации контекста, описанного в Java-классе
+				AnnotationConfigWebApplicationContext appContext = new AnnotationConfigWebApplicationContext();
+				appContext.register(AppConfig.class);
+				appContext.refresh();
+				
+				// Добавление и регистрация DispatcherServlet
+				DispatcherServlet servlet = new DispatcherServlet(appContext);
+				ServletRegistration.Dynamic registration = servletCxt.addServlet("app", servlet);
+				registration.setLoadOnStartup(1);
+				registration.addMapping("/app/*");
+			}
+		}
+		
+	DispatcherServlet передает бины	для обработки запросов и подготовки соответствующих ответов.
+	
+	Настраиваемые Интерфейсы:
+		
+		1. HandlerMapping - Перехватчики событий. Сопоставление запроса обработчику вместе со списком перехватчиков для предварительной и последующей обработки. основными реализациями HandlerMapping являются RequestMappingHandlerMapping (который поддерживает аннотированные методы @RequestMapping) и SimpleUrlHandlerMapping (который поддерживает явные регистрации шаблонов пути URI для обработчиков). 		 
+		2. HandlerAdapter - помогает DispatcherServlet вызвать обработчик, сопоставленный с запросом, независимо от того, как фактически вызывается обработчик.
+		3. HandlerExceptionResolver - Стратегия разрешения исключений, возможно сопоставление их с обработчиками, представлениями ошибок HTML.
+		4. ViewResolver - обработчик выбора представлений на основе строки - имени представления.
+		5. LocaleResolver, LocaleContextResolver - обработчик, помогающий установить локализацию клиента.
+		6. ThemeResolver - обработчик, позволяющий применять различные темы оформления.
+		7. MultipartResolver - оьработчик, способный разобрать составные запросы.
+		8. FlashMapManager - Обработчик, позволяющий передавать артибуты между запросами. Обычно реализуется через перенаправление.
+		
+	DispatcherServlet проверяет WebApplicationContext на предмет наличия каждого из перечисленных интерфейсов, если бины с таким типом отсутствуют, он возвращается к типам по умолчанию, перечисленным в DispatcherServlet.properties.	
+		
+	Конфигурация Сервлета:
+		
+		Конфигурирование сервлета выполняется классом, наследником абстрактного класса AbstractContextLoaderInitializer и реализующим интерфейс WebApplicationInitializer с единственным методом onStartup(ServletContext var1).
+		
+		public class MyWebAppInitializer implements WebApplicationInitializer {
+    
+			public void onStartup(ServletContext container) {
+				  // Добавляет главный контекст приложения Spring.
+				  AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
+				  rootContext.register(AppConfig.class);
+		 
+				  // Устанавливает длительность жизненного цикла для главного контекста приложения.
+				  container.addListener(new ContextLoaderListener(rootContext));
+			
+				  // Добавляет диспетчер сервлетов для контакста приложения Spring.
+				  AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
+				  dispatcherContext.register(DispatcherConfig.class);
+			
+				  // Регистрирует и привязывает диспетчер сервлет.
+				  ServletRegistration.Dynamic dispatcher = container.addServlet("dispatcher", new DispatcherServlet(dispatcherContext));
+				  dispatcher.setLoadOnStartup(1);
+				  dispatcher.addMapping("/");
+			}
+	
+	При необходимости настройки диспетчера сервлетов можно переопределить метод createDispatcherServlet().
+	
+	При необходимости, мы можем унаследоваться от AbstractAnnotationConfigDispatcherServletInitializer, переопределить методы getRootConfigClasses (Принимает конфигурационный класс контекста приложения) и getServletConfigClasses (Принимает конфигурационный класс контекста сервлета приложения) для 
+		
+	Класс AbstractDispatcherServletInitializer предоставляет удобный способ добавления фильтра и автоматического сопоставления с диспетчером сервлетов на основе возвращаемого типа.
+		
+	Принцип и порядок обработки запросов диспетчером сервлетов:
+		1. Диспетчер сервлет ищет WebApplicationContext и привязывает его по-умолчанию как артибут DispatcherServlet.key.WEB_APPLICATION_CONTEXT_ATTRIBUTE. Затем этот атрибут может использоваться другими компонентами программы (контроллерами и т.п.).
+		2. К запросу привязывается Обработчик локализации, для определения текущей локализации. Если не нужно определение локализации, LocaleResolver можно не использовать.
+		3. К запросу приаязывается theme resolver - определяющий используемую тему. Если темы не используются - ThemeResolver можно не указывать.
+		4. Если вы зададите составной преобразователь файлов, запрос проверяется на наличие составных частей. При обнаружении нескольких частей запрос оборачивается в MultipartHttpServletRequest
+		5. Выполняется поиск соответствующего обработчика. Если обработчик найден, цепочка выполнения, связанная с обработчиком (препроцессоры, постпроцессоры и контроллеры), выполняется подготовка визуализации. Кроме того, для аннотированных контроллеров ответ может быть отображен (в пределах HandlerAdapter) вместо представления.
+		6. Если была определена модель - возвращаем представление модели, если нет - возвращаем представление ошибки (причин, по которым не возвращено представление).
+		
+	Параметры инициализации Диспетчера Сервлета:	
+		1. Устанавливается класс, реализующий ConfigurableWebApplicationContex, если испрльзуются аннотации и java-код - используется класс AnnotationConfigWebApplicationContext.
+		2. contextConfigLocation - строка, отражающая путь к контекстам. Возможно указание через запятую (если файлов с контекстами несколько), если в нескольких контекстах есть описание одного и того же бина - приоритет имеет последний указанный путь. 
+		3.  namespace - Пространство имен WebApplicationContext. По умолчанию [servlet-name] - сервлет
+		
+		
