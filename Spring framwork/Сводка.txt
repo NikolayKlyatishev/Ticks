@@ -9,7 +9,7 @@
 DISPATCHER SERVLET
 
 
-	Dispatcher Servlet - сервлет, предоставляющий алгоритм обработки запросов. Может быть объявлен как в web.xml, так и при помощи java-конфигурации. Dispatcher servlet использует конфигурацию Spring для поиска используемых компонентов, таких как обработчики сопоставления запросов, обработчики испключений и т.д.
+	Dispatcher Servlet - сервлет, предоставляющий алгоритм обработки запросов. Может быть объявлен как в web.xml, так и при помощи java-конфигурации без использования web.xml. Dispatcher servlet использует конфигурацию Spring для поиска используемых компонентов, таких как обработчики сопоставления запросов, обработчики испключений и т.д.
 	
 	Пример инициализации DispatcherServlet:
 	
@@ -37,34 +37,34 @@ DISPATCHER SERVLET
 		
 		1. HandlerMapping - Перехватчики событий. Сопоставление запроса обработчику вместе со списком перехватчиков для предварительной и последующей обработки. основными реализациями HandlerMapping являются RequestMappingHandlerMapping (который поддерживает аннотированные методы @RequestMapping) и SimpleUrlHandlerMapping (который поддерживает явные регистрации шаблонов пути URI для обработчиков). 		 
 		2. HandlerAdapter - помогает DispatcherServlet вызвать обработчик, сопоставленный с запросом, независимо от того, как фактически вызывается обработчик.
-		3. HandlerExceptionResolver - Стратегия разрешения исключений, возможно сопоставление их с обработчиками, представлениями ошибок HTML.
+		3. HandlerExceptionResolver - обработчик разрешения исключений, возможно сопоставление их с обработчиками, представлениями ошибок в HTML.
 		4. ViewResolver - обработчик выбора представлений на основе строки - имени представления.
 		5. LocaleResolver, LocaleContextResolver - обработчик, помогающий установить локализацию клиента.
 		6. ThemeResolver - обработчик, позволяющий применять различные темы оформления.
 		7. MultipartResolver - оьработчик, способный разобрать составные запросы.
 		8. FlashMapManager - Обработчик, позволяющий передавать артибуты между запросами. Обычно реализуется через перенаправление.
 		
-	DispatcherServlet проверяет WebApplicationContext на предмет наличия каждого из перечисленных интерфейсов, если бины с таким типом отсутствуют, он возвращается к типам по умолчанию, перечисленным в DispatcherServlet.properties.	
+	DispatcherServlet проверяет WebApplicationContext на предмет наличия каждого из перечисленных интерфейсов, если бины с таким типом отсутствуют, он использует типы по умолчанию, перечисленные в DispatcherServlet.properties.	
 		
-	Конфигурация Сервлета:
+	Конфигурирование Сервлета:
 		
 		Конфигурирование сервлета выполняется классом, наследником абстрактного класса AbstractContextLoaderInitializer и реализующим интерфейс WebApplicationInitializer с единственным методом onStartup(ServletContext var1).
 		
 		public class MyWebAppInitializer implements WebApplicationInitializer {
     
 			public void onStartup(ServletContext container) {
-				  // Добавляет главный контекст приложения Spring.
+				  // Добавляем главный контекст приложения Spring.
 				  AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
 				  rootContext.register(AppConfig.class);
 		 
-				  // Устанавливает длительность жизненного цикла для главного контекста приложения.
+				  // Устанавливаем длительность жизненного цикла для главного контекста приложения.
 				  container.addListener(new ContextLoaderListener(rootContext));
 			
-				  // Добавляет диспетчер сервлетов для контакста приложения Spring.
+				  // Добавляем диспетчер сервлетов для контакста приложения Spring.
 				  AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
 				  dispatcherContext.register(DispatcherConfig.class);
 			
-				  // Регистрирует и привязывает диспетчер сервлет.
+				  // Регистрируем и привязываем диспетчер сервлет в URL, т.е. в нашем случае обрабатываются все http запросы.
 				  ServletRegistration.Dynamic dispatcher = container.addServlet("dispatcher", new DispatcherServlet(dispatcherContext));
 				  dispatcher.setLoadOnStartup(1);
 				  dispatcher.addMapping("/");
@@ -72,21 +72,75 @@ DISPATCHER SERVLET
 	
 	При необходимости настройки диспетчера сервлетов можно переопределить метод createDispatcherServlet().
 	
-	При необходимости, мы можем унаследоваться от AbstractAnnotationConfigDispatcherServletInitializer, переопределить методы getRootConfigClasses (Принимает конфигурационный класс контекста приложения) и getServletConfigClasses (Принимает конфигурационный класс контекста сервлета приложения) для 
+	При необходимости, мы можем унаследоваться от AbstractAnnotationConfigDispatcherServletInitializer, переопределить методы getRootConfigClasses (Принимает конфигурационный класс контекста приложения) и getServletConfigClasses (Принимает конфигурационный класс контекста сервлета приложения). 
 		
 	Класс AbstractDispatcherServletInitializer предоставляет удобный способ добавления фильтра и автоматического сопоставления с диспетчером сервлетов на основе возвращаемого типа.
+		
+	Параметры инициализации Диспетчера Сервлета:	
+		1. Устанавливается класс, реализующий ConfigurableWebApplicationContex, если испрльзуются аннотации и java-код - используется класс AnnotationConfigWebApplicationContext.
+		2. contextConfigLocation - строка, отражающая путь к контекстам. Возможно указание через запятую (если файлов с контекстами несколько), если в нескольких контекстах есть описание одного и того же бина - приоритет имеет последний указанный путь. 
+		3. namespace - Пространство имен WebApplicationContext. По умолчанию [servlet-name] - сервлет
+		4. throw ExceptionIfNoHandlerFound - обработка исключительных ситуаций, если для запроса не найден обработчик. Может быть перехвачен при помощи HandlerExceptionResolver и далее обработан так же как и прочие исключения.	
 		
 	Принцип и порядок обработки запросов диспетчером сервлетов:
 		1. Диспетчер сервлет ищет WebApplicationContext и привязывает его по-умолчанию как артибут DispatcherServlet.key.WEB_APPLICATION_CONTEXT_ATTRIBUTE. Затем этот атрибут может использоваться другими компонентами программы (контроллерами и т.п.).
 		2. К запросу привязывается Обработчик локализации, для определения текущей локализации. Если не нужно определение локализации, LocaleResolver можно не использовать.
 		3. К запросу приаязывается theme resolver - определяющий используемую тему. Если темы не используются - ThemeResolver можно не указывать.
 		4. Если вы зададите составной преобразователь файлов, запрос проверяется на наличие составных частей. При обнаружении нескольких частей запрос оборачивается в MultipartHttpServletRequest
-		5. Выполняется поиск соответствующего обработчика. Если обработчик найден, цепочка выполнения, связанная с обработчиком (препроцессоры, постпроцессоры и контроллеры), выполняется подготовка визуализации. Кроме того, для аннотированных контроллеров ответ может быть отображен (в пределах HandlerAdapter) вместо представления.
-		6. Если была определена модель - возвращаем представление модели, если нет - возвращаем представление ошибки (причин, по которым не возвращено представление).
+		5. Выполняется поиск соответствующего обработчика. Если обработчик найден, выполняется логика, связанная с обработчиком (препроцессоры, постпроцессоры и контроллеры), выполняется подготовка визуализации. Кроме того, для аннотированных контроллеров ответ может быть отображен (в пределах HandlerAdapter) вместо представления.
+		6. Если была определена модель - возвращаем представление модели, если нет - возвращаем представление ошибки (причины, по которым не возвращено представление).
 		
-	Параметры инициализации Диспетчера Сервлета:	
-		1. Устанавливается класс, реализующий ConfigurableWebApplicationContex, если испрльзуются аннотации и java-код - используется класс AnnotationConfigWebApplicationContext.
-		2. contextConfigLocation - строка, отражающая путь к контекстам. Возможно указание через запятую (если файлов с контекстами несколько), если в нескольких контекстах есть описание одного и того же бина - приоритет имеет последний указанный путь. 
-		3.  namespace - Пространство имен WebApplicationContext. По умолчанию [servlet-name] - сервлет
+	Interception - перехват запросов.
+	
+	Перехватчик запросов - класс, реализующий HandlerInterceptor из пакета org.springframework.web.servlet. Для работы перехватчика мы должны зарегистрировать его в конфигурационном классе (отмеченным аннотацией @Configuration) в методе void addInterceptors(InterceptorRegistry registry) {}
+	
+	Добавление выполяется методом registry.addInterceptor(HandlerInterceptor interCeptor)
+			
+		Пример:
+			@Configuration
+			@EnableWebMvc
+			public class WebConfig implements WebMvcConfigurer {
+
+				@Override
+				public void addInterceptors(InterceptorRegistry registry) {
+					registry.addInterceptor(new ThemeChangeInterceptor()).addPathPatterns("/**").excludePathPatterns("/admin/**");
+				}
+			}
+			
+	Интерфейс HandlerInterceptor предлагает 3 метода для реализации:
+		boolean preHandle(..): перехват перед выполнением фактического обработчика
+		void postHandle(..): перехват после выполнения обработчика
+		void afterCompletion(..): перехват после завершения обработки запроса, то есть после рендеринга представления
+			
+	
+	Exception - обработка исключений
 		
+	Классы, реализующие интерфейс HandlerExceptionResolver могут обрабатывать исключительные ситуации, возникающие при работе программы. Результатом может быть ModelAndView, указывающий на представление ошибки, пустой ModelAndView (сли исключение было обработано в преобразователе) или null (в этом случае исключение остается неразрешенным). 
 		
+	Интерфейс содержит метод, resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex), в котором можеть быть реализована логика обработки исключения.
+			
+		1. SimpleMappingExceptionResolver - привязка имени класса исключения к имени отображения ошибки. Используется для отображения 
+		2. DefaultHandlerExceptionResolver - Разрешает исключения, вызванные Spring MVC, и сопоставляет их с кодами состояния HTTP. См. также альтернативные исключения ResponseEntityExceptionHandler и REST API.
+		3. ResponseStatusExceptionResolver - Разрешает исключения с аннотацией @ResponseStatus и сопоставляет их с кодами состояния HTTP на основе значения в аннотации.
+		4. ExceptionHandlerExceptionResolver - Разрешает исключения путем вызова метода @ExceptionHandler в классе @Controller или @ControllerAdvice. Ознакомиться с методами @ExceptionHandler.	
+			
+	Можно создать цепочку исключений, создав несколько реализаций HandlerExceptionResolver и установив их свойство order. Чем выше значение свойства order, тем позже позиционируется звено исключения.  
+	
+	Если исключение остается неразрешенным - контейнер сервлета перенаправляет запрос по URL, настроенному по-умолчанию. 
+	
+	Пример в web.xml:
+		<error-page>
+			<location>/error</location>
+		</error-page>
+	
+	Настройка обработки может быть осуществлена при помощи обычного контроллера.
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
