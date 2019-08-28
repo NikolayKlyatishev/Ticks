@@ -291,7 +291,7 @@ THEMES - темы
 	
 MULTIPART RESOLVER - составной преобразователь
 	
-	MultipartResolver в пакете org.springframework.web.multipart - это стратегия для разбора составных запросов, включая загрузку файлов. Существует 2 реализации - одна, основанная на Commons FileUpload, а другая - на анализе составных запросов Servlet 3.0.
+	MultipartResolver в пакете org.springframework.web.multipart - это механизм для разбора составных запросов, включая загрузку файлов. Существует 2 реализации - одна, основанная на Commons FileUpload, а другая - на анализе составных запросов Servlet 3.0.
 	
 	Чтобы включить многоэлементную обработку, необходимо объявить компонент MultipartResolver в конфигурации DispatcherServlet Spring с именем multipartResolver. DispatcherServlet обнаруживает его и применяет к входящему запросу. Когда сообщение с типом содержимого multipart/form-data получено, преобразователь анализирует содержимое и обертывает текущий HttpServletRequest как MultipartHttpServletRequest, чтобы обеспечить доступ к разрешенным частям в дополнение к предоставлению их в качестве параметров запроса.
 	
