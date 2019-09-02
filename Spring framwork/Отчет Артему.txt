@@ -1,0 +1,81 @@
+Структура web приложения спринг:
+
+	Спринг - фреймворк управления компонентами (Бинами). Все бины объединяются в контекст приложения. Сужествуют 2 вида контекстов: Корневой и дочерний контакст. Спринг может обновременно содержать несколько контекстов, один будет корневым, остальные дочерними. Все бины, объявленные в дочерних контекстах могут получить доступ к бинам корневого контекста, но не наоборот.
+	
+	1. ContextLoaderListener - корневой контекст приложения. Данный класс создает корневой контекст приложения. Этот контекст может использоваться всеми Dispatcher Servlet-ами, существует только один экземпляр.
+	2. DispatcherServlet - дочерий контекст приложения. Является сервлетом, основная цель которого - обрабатывать входящие http-запросы. Количество сервлетов в 1 приложении не органичено.
+	
+	При получении http запроса, DispatcherServlet, на основе анализа URL выбирает соответсвующий контроллер и представление, затем формируется ответ клиенту.
+	
+	
+=================================================================================	
+	А теперь рассмотрим подробнее каждый из этапов:
+	
+	ServletContext - интерфейс, определяющий набор методов, которые сервлет использует для связи со своим контейнером сервлетов. Существует в единственном экземпляре на все веб приложение и JVM, которая его выполняет. Если в дисктипроре развертывания приложение помечено как "распределенное" - лучше не использовать ServletContext для обмена глабальными параметрами между JVM, поскольку контекст не будет глобальным. (на каждой jvm свой). ServletContext находится в объекте ServletConfig, который используется для передачи информации сервлету во время инициализации.
+	
+	Все начинается с интерфейса WebMvcConfigurer, который позволяет программно настроить ServletContext. Интерфейс WebMvcConfigurer содержит 1 метод - onStartup, который принимает объект, реализующий ServletContext. WebMvcConfigurer автоматически обнаруживается контейнером сервлетов.
+	
+	В методе onStartup(ServletContext servletContext){} мы можем:
+		
+		1. Инициализировать корневой контекст (root-контекст). Этот контекст содержится в 1 экземпляре, конфигурация описывается в пользовательском классе, отмеченным аннотацией @Configuration
+			Пример: 
+				AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
+				rootContext.register(AppConfig.class)
+			где 
+				AnnotationConfigWebApplicationContext - класс, позволяющий регистрировать классы, отмеченные аннотацией @Configuration, @Component или совместимые с JSR-330
+				AppConfig - пользовательский класс содержащий описания бинов, отмеченный @Configuration, @Component или совместимые с JSR-330.
+	
+		2. Добавить слушатель к ServletContext. Пример слушателя: ContextLoaderListener - Интерфейс для получения уведомлений об изменениях жизненного цикла ServletContext. Добавить слушателя можно методом addListener(...)    
+			Примеп использования:
+				servletContext.addListener(new ContextLoaderListener(rootContext));
+		3. Добавить фильтры - классы, реализующий интерфейсс Filter. Фильтры выполняют фильтрацию в методе doFilter. Каждый фильтр имеет доступ к объекту FilterConfig, из которого он может получить свои параметры инициализации, и ссылку на ServletContext для выполнения фильтрации. Может использоваться для Аутентификации, лиггеризации и т.п.
+			Пример использования:
+				FilterRegistration charEncodingFilterReg = container.addFilter("CharacterEncodingFilter", CharacterEncodingFilter.class);
+				charEncodingFilterReg.setInitParameter("encoding", "UTF-8");
+				charEncodingFilterReg.setInitParameter("forceEncoding", "true");
+				charEncodingFilterReg.addMappingForUrlPatterns(null, false, "/*");
+		4. Добавить сервлет - объект, котрырй принимает http-запрос и выбирает соответсвующий контроллер и представление и возвращает ответ.
+			Пример использования:
+				ServletRegistration.Dynamic dispatcher = container.addServlet("dispatcher", new DispatcherServlet(dispatcherContext));
+				dispatcher.setLoadOnStartup(1);
+				dispatcher.addMapping("/");
+			где:
+				dispatcherContext - объект класса AnnotationConfigWebApplicationContext, в который передан классы, отмеченные аннотацией @Configuration, @Component или совместимые с JSR-330 с описанием кмпонентов для этого сервлета. 
+		5. Устанавливать атрибуты setAttribute(String name, Object object)
+		
+		и пр...
+	
+	
+	1. ContextLoaderListener - слушатель для запуска и выключения корневого контекста WebApplicationContext. Должен быть либо добавлен в web.xml, либо, если используется в Servlet 3.0, может введен программно в реализациях интерфейса WebApplicationInitializer.
+	
+	
+	
+	
+	Пример, демонстрирующий инициализацию веб приложения:
+	 
+		public class SpringStarter implements WebApplicationInitializer {
+			@Override
+			public void onStartup(ServletContext container) throws ServletException {
+				
+				// Добавляем root-контекст приложения Spring
+				AnnotationConfigWebApplicationContext rootContext =
+						new AnnotationConfigWebApplicationContext();
+				rootContext.register(AppConfig.class);
+
+				// слушатель - управляет жизненным циклом для root-контекста приложения Spring
+				container.addListener(new ContextLoaderListener(rootContext));
+
+				// Добавляем контекст диспетчера сервлетов
+				AnnotationConfigWebApplicationContext dispatcherContext =
+						new AnnotationConfigWebApplicationContext();
+				dispatcherContext.register(SpringConfig.class);
+
+				// Регистрируем и привязываем диспетчер сервлетов.
+				ServletRegistration.Dynamic dispatcher =
+						container.addServlet("dispatcher", new DispatcherServlet(dispatcherContext));
+				dispatcher.setLoadOnStartup(1);
+				dispatcher.addMapping("/");
+			}
+		}
+	
+	2. 

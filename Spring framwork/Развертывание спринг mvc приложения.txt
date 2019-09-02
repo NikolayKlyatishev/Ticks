@@ -1,0 +1,114 @@
+	
+	ПОРЯДОК ОПИСАНИЯ КОНПОНЕНТОВ SPRING
+	
+	1. Описывает дискриптор развертывания:
+			
+			XML:
+			
+				<?xml version="1.0" encoding="UTF-8"?>
+				<web-app>
+					
+						<!-- Описание: -->
+					
+					<listener>
+						<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+					</listener>
+
+						<!-- Описание: Расположение файла с описанием контекста спринг (Бины)-->
+					<context-param>
+						<param-name>contextConfigLocation</param-name>
+						<param-value>WEB-INF/spring-context.xml</param-value>
+					</context-param>
+							
+							<!-- Описание: Объявление диспетчера сервлета, в параметрах передаем файл контекста спринга-->
+					<servlet>
+						<servlet-name>dispatcher-servlet</servlet-name>
+						<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+						<init-param>
+							<param-name>contextConfigLocation</param-name>
+							<param-value>WEB-INF/spring-context.xml</param-value>
+						</init-param>
+					</servlet>
+							
+							<!-- Описание: маппинг нашего сервлета-->
+					<servlet-mapping>
+						<servlet-name>dispatcher-servlet</servlet-name>
+						<url-pattern>/</url-pattern>
+					</servlet-mapping>
+
+				</web-app>
+				
+				Файл web.xml может быть заменен Java-классом, в котором мы используем xml конфигурацию spring-context:
+				
+					public class SpringStarter implements WebApplicationInitializer {
+
+						@Override
+						public void onStartup(ServletContext servletContext) throws ServletException {
+							
+							// Создаем контекст приложения из файла spring-context.xml
+							XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
+							applicationContext.setConfigLocation("/WEB-INF/spring-context.xml");
+
+							// Объявляем наш диспетчер сервлет и мапим его на "/".
+							DispatcherServlet dispatcherServlet = new DispatcherServlet(applicationContext);
+							ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcher", dispatcherServlet);
+							registration.setLoadOnStartup(1);
+							registration.addMapping("/");
+						}
+					}
+					
+				Можно отказаться от xml кофигурации spring. Для этого XmlWebApplicationContext можно заменить на AnnotationConfigWebApplicationContext. Важным моментом является использование метода addListener(ContextLoaderListener loaderListener) 
+				
+				ContextLoaderListener создает корневой контекст приложения и будет совместно использоваться с дочерними контекстами, созданными всеми контекстами DispatcherServlet
+				
+				Пример spring-context: 
+					
+					<beans xmlns="http://www.springframework.org/schema/beans"
+					   xmlns:mvc="http://www.springframework.org/schema/mvc"
+					   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					   xmlns:context="http://www.springframework.org/schema/context"
+					   xsi:schemaLocation="http://www.springframework.org/schema/beans
+						https://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/mvc
+						https://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+							<!-- Описание: Говорим спрингу, что аннотации нужно использовать -->
+						<mvc:annotation-driven/>
+							<!-- Описание: Указываем, где искать наши бины для контекста -->
+						<context:component-scan base-package="nkkl"/>
+					</beans>
+					
+			Конфигурирование на java 
+				
+				public class SpringStarter implements WebApplicationInitializer {
+
+					@Override
+					public void onStartup(ServletContext servletContext) throws ServletException {
+
+						// Контекст веб приложения
+						AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
+						applicationContext.register(SpringConfig.class);
+
+						// Создаем корневой контекст приложения и добавляем в ServletContext.
+						ContextLoaderListener loaderListener = new ContextLoaderListener(applicationContext);
+						servletContext.addListener(loaderListener);
+
+						// Создаем новый сервлет, мапим и добавляем в ServletContext
+						DispatcherServlet servlet = new DispatcherServlet(applicationContext);
+						ServletRegistration.Dynamic registration = servletContext.addServlet("dispatcher", servlet);
+						registration.addMapping("/");
+						registration.setLoadOnStartup(1);
+
+						// Устанавливаем ServletContext в контекст нашего веб приложения
+						applicationContext.setServletContext(servletContext);
+						// Обновляем
+						applicationContext.refresh();
+					}
+				}
+			
+			
+			
+			
+			
+			
+			
