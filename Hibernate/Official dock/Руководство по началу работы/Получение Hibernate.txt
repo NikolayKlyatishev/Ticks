@@ -1,0 +1,31 @@
+
+Функциональность Hibernate разделена на ряд модулей / артефактов, предназначенных для изоляции зависимостей (модульности)
+
+1. hibernate-core - основной (основной) модуль Hibernate. Определяет его функции ORM и API, а также различные SPI интеграции.
+2. hibernate-envers - функция управления версиями сущностей Hibernate
+3. hibernate-spatial - поддержка пространственных / GIS-данных Hibernate
+4. hibernate-osgi - поддержка Hibernate для работы в контейнерах OSGi.
+5. hibernate-agroal - интеграция с библиотекой пула подключений Agroal в Hibernate
+6. hibernate-c3p0 - интеграция с библиотекой пула подключений c3p0 в Hibernate
+7. hibernate-vibur - интеграция с библиотекой пула подключений Vibur DBCP в Hibernate
+8. hibernate-proxool - интеграция с библиотекой пула подключений Proxool в Hibernate
+9. hibernate-jcache - интеграция спецификации кэширования JCache в Hibernate, позволяя любой совместимой реализации стать поставщиком кэша второго уровня
+10. hibernate-ehcache - интеграция библиотеки кэширования Ehcache в Hibernate в качестве поставщика кэша второго уровня
+
+Зависимости hibernate можно подключить, использую Maven.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
