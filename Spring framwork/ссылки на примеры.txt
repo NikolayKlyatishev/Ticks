@@ -1,0 +1,15 @@
+Пример обновления таблцы с товарами при помощи ajax и spring-mvc:
+https://www.sitepoint.com/community/t/how-to-properly-populate-html-table-with-jquery-ajax-using-json-formatted-data/202187
+
+Пример реализации простого spring-mvc приложения:
+http://www.mkyong.com/spring-mvc/spring-4-mvc-ajax-hello-world-example/
+
+Еще немного ajax
+https://www.mkyong.com/spring-boot/spring-boot-ajax-example/
+
+Вывод данныз в jsp из контроллера
+http://www.cyberforum.ru/java-j2ee/thread2327264.html
+
+Как правильно заполнить таблицу HTML с помощью jQuery AJAX, используя данные в формате JSON?
+https://www.sitepoint.com/community/t/how-to-properly-populate-html-table-with-jquery-ajax-using-json-formatted-data/202187/3
+
