@@ -1,0 +1,40 @@
+	Порядок изучения
+	
+	Список технологий JavEE:
+	
+	1.	CDI (Context and Dependency Injection)		- ejb3 в действии
+	2.  EJB (Enterprise JavaBeans)					- ejb3 в действии
+	3.	Bean Validation
+	4.	JAF (JavaBeans Activation Framework)
+	5.	WebSocet (Java API for WebSocket)
+	6.	Servlet
+	7. 	Работа с JSON (JSON-P, JSON-B)
+	8.	JAX-WS (Java API for XML Web Services)
+	9. 	JAX-RS (Java API for RESTful Web Services)
+	10.	JPA (Java Persistence API)					- ejb3 в действии
+	11. JTA (Java Transaction API)					- ejb3 в действии
+	12.	JNDI (Java Naming and Directory Interface)
+	13. JMS	(Java Message Service)					- ejb3 в действии
+	14.	JAAS (Java Authentication and Authorization Service)
+	15.	JAVAMail (Получение и отправка электронной почты)
+	16.	Java EE Security API
+	17. JCA (J2EE Connector Architecture)
+
+
+
+
+	1. JavaEE 7
+		1 CDI
+		2 Валидация компонентов
+		3 JPA
+		4 ORM
+			1 Hibernate
+		5 JPQL
+		6 EJB
+		7 Функции обратного вызова
+		8 Транзакции
+		9 JSF 	Нужно ли вобще??????
+		10 Шаблон MVC в JavaEE
+		11 Обмен сообщениями
+		12. SOAP
+		13. Веб службы REST

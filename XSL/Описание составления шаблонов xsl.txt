@@ -1,0 +1,315 @@
+XSLT Stylesheet		
+		Ниже пример простого XML-документа и XSLT таблицы стилей, которая выполняет трансформация XML в HTML.	
+			
+			---------------------------------------------------------------
+			Файл XsltBasics/Demos/Paul.xml :
+			
+				<?xml version="1.0"?>
+				<?xml-stylesheet href="beatle.xsl" type="text/xsl"?>
+				<person>
+					<name>
+						<firstname>Paul</firstname>
+						<lastname>McCartney</lastname>
+					</name>
+					<job>Singer</job>
+					<gender>Male</gender>
+				</person>
+			
+			---------------------------------------------------------------
+			Файл XsltBasics/Demos/Beatle.xsl :
+				
+				<?xml version="1.0"?>
+				<xsl:stylesheet version="1.0" 
+					xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:output method="html"/>
+
+				<xsl:template match="child::person">
+					<html>
+						<head>
+							<title>
+								<xsl:value-of select="descendant::firstname" />
+								<xsl:text> </xsl:text>
+								<xsl:value-of select="descendant::lastname" />
+							</title>
+						</head>
+						<body>
+							<xsl:value-of select="descendant::firstname" />
+							<xsl:text> </xsl:text>
+							<xsl:value-of select="descendant::lastname" />
+						</body>
+					</html>
+				</xsl:template>
+				</xsl:stylesheet>
+			
+			Разберем файл Beatle.xsl
+			
+				Первая строка - декларирование, что документ является XML-документом. Данная строка не обязательна.
+				Вторая строка - объвляем, что документ так же является документом XSLT версии 1.0 
+				Третья строка - 
+					xmlns:xsl="http://www.w3.org/1999/XSL/Transform" - указываем пространство имен.
+					xsl:output method="html" говорит нам о том, что результат будет в виде HTML-документа.
+				Четвертая строка - это открывающий элемент <xsl: template>. Атрибут match этого тега принимает XPath, который указывает, что этот шаблон применяется к узлу person XML-документа. Поскольку person является элементом исходного документа, этот шаблон будет выполняться только один раз.
+				
+				Затем есть несколько строк HTML-тегов, за которыми следуют два элемента <xsl: value-of/>, разделенные одним элементом <xsl:text>. Тег <xsl:value-of/> имеет атрибут select, который принимает XPath, указывающий на определенный элемент или группу элементов в XML-документе. В этом случае два тега <xsl:value-of/> указывают на элементы firstname и lastname, указывая, что они должны выводиться в заголовке HTML-страницы. Элемент <xsl:text> </xsl:text> используется для создания пробела между элементами first name и last name.
+				
+				<xsl:value-of select="descendant::firstname"/> 
+				<xsl:text> </xsl:text>
+				<xsl:value-of select="descendant::lastname"/> 
+				Затем есть еще несколько тегов HTML, за которыми следуют те же теги XSLT, повторно выводя имя и фамилию в теле HTML-страницы.
+				
+			
+	xsl:template		
+				Тег xsl:template чтобы указать процессору XSLT, как поступить, когда он сталкивается с соответствующим узлом. Совпадения определяются выражением XPath в атрибуте match тега xsl:template
+				
+				---------------------------------------------------------------
+				Файл XsltBasics/Demos/FirstName.xsl :
+					<?xml version="1.0" encoding="UTF-8"?>
+					<xsl:stylesheet version="1.0" 
+									xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+						<xsl:output method="text"/>
+						<xsl:template match="firstname">
+							We found a first name! 
+						</xsl:template>
+					</xsl:stylesheet>
+
+				Если мы используем этот XSLT для преобразования XsltBasics/Demos/FirstName.xml, который имеет тот же XML, что и XsltBasics/Demos/Paul.xml, результат будет следующим:
+					We found a first name! McCartneySingerMale
+
+				Текст "We found a first name!" появляется только один раз, потому что найдено только одно совпадение. Текст "McCartneySingerMale" отображается, потому что механизм XSLT будет продолжать просматривать XML-документ, пока ему явно не будет сказано остановиться. Когда он достигает текстового узла без соответствующего шаблона, он использует шаблон по умолчанию, который просто выводит текст. "McCartney", "Singer" и "Male" - это значения текстового узла внутри элементов, следующих за элементом FirstName.
+
+			Преобразование XsltBasics/Demos/Beatles.xml
+					<?xml version="1.0"?>
+					<?xml-stylesheet href="FirstName.xsl" type="text/xsl"?>
+					<beatles>
+						<beatle link="http://www.paulmccartney.com">
+							<name>
+								<firstname>Paul</firstname>
+								<lastname>McCartney</lastname>
+							</name>
+						</beatle>
+						<beatle link="http://www.johnlennon.com">
+							<name>
+								<firstname>John</firstname>
+								<lastname>Lennon</lastname>
+							</name>
+						</beatle>
+						<beatle link="http://www.georgeharrison.com">
+							<name>
+								<firstname>George</firstname>
+								<lastname>Harrison</lastname>
+							</name>
+						</beatle>
+						<beatle link="http://www.ringostarr.com">
+							<name>
+								<firstname>Ringo</firstname>
+								<lastname>Starr</lastname>
+							</name>
+						</beatle>
+						<beatle link="http://www.webucator.com" real="no">
+							<name>
+								<firstname>Nat</firstname>
+								<lastname>Dunn</lastname>
+							</name>
+						</beatle>
+					</beatles>
+					
+				Результат преобразования: We found a first name! McCartney We found a first name! Lennon We found a first name! Harrison We found a first name! Starr We found a first name! Dunn
+
+				Каждый раз, когда процессор находит в XML-документе элемент firstname, выводится текст "We found a first name!". Для других элементов с текстом (в данном случае только элементы lastname) выводится фактический текст.
+
+			
+	xsl:value-of
+				Элемент xsl:value-of используется для вывода текстового значения узла
+				
+				Файл: XsltBasics/Demos/ValueOf1.xsl
+					<?xml version="1.0" encoding="UTF-8"?>
+					<xsl:stylesheet version="1.0" 
+									xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+						<xsl:output method="text"/>
+						<xsl:template match="firstname">
+							We found a first name and it's <xsl:value-of select="."/>
+						</xsl:template>
+					</xsl:stylesheet>
+	
+				Если мы используем этот XSLT для преобразования XsltBasics/Demos/Beatles-VO1.xml, который имеет тот же XML, что и XsltBasics/Demos/Beatles.XML, т Тогда результат будет следующим:
+					We found a first name and it's PaulMcCartney We found a first name and it's JohnLennon We found a first name and it's GeorgeHarrison We found a first name and it's RingoStarr We found a first name and it's NatDunn
+				
+				Атрибут select принимает XPath,который используется для указания значения узла для вывода. Одна точка (.) ссылается на текущий узел (т.е. узел, который был сопоставлен шаблоном).
+
+
+	Пробелы и xsl:text	
+				Пробельные символы в шаблоне XSLT будут выведены как есть. Для иллюстрации рассмотрим следующие документы XML и XSLT.
+				
+				------------------------------------------------------------------------------
+				Файл xml (XsltBasics/Demos/WhiteSpace1.xml):
+					<?xml version="1.0" encoding="UTF-8"?>
+					<?xml-stylesheet type="text/xsl" href="WhiteSpace1.xsl"?>
+					<example>
+						<blurb>
+							Hello World!
+						</blurb>
+					</example>
+				
+				------------------------------------------------------------------------------
+				Файл xsl (XsltBasics/Demos/WhiteSpace1.xsl):
+					<?xml version="1.0" encoding="UTF-8"?>
+					<xsl:stylesheet version="1.0" 
+									xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+						<xsl:output method="text"/>
+						<xsl:template match="blurb">
+							Literal			Text
+						</xsl:template>
+					</xsl:stylesheet>
+				------------------------------------------------------------------------------
+				
+				Вывод:
+					1 
+					2				Literal			Text
+					3
+				
+				Есть есть потребность избежать подобных результатов - можно использовать следующий тег <xsl:text>...</xsl:text> в файле xsl:
+				------------------------------------------------------------------------------
+				Файл xsl (XsltBasics/Demos/WhiteSpace2.xsl):
+					<?xml version="1.0" encoding="UTF-8"?>
+					<xsl:stylesheet version="1.0" 
+									xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+						<xsl:output method="text"/>
+						<xsl:template match="blurb">
+							<xsl:text>Literal			Text</xsl:text>
+						</xsl:template>
+					</xsl:stylesheet>
+				------------------------------------------------------------------------------
+				Вывод:
+					1 Literal			Text
+				
+				
+	Вставка пробелов с помощью xsl: text
+			Приведенные выше примеры иллюстрируют, как xsl: text можно использовать для удаления пробелов. Его также можно использовать для добавления пробелов, где в противном случае их не было бы. Давайте рассмотрим другой пример.			
+			
+			------------------------------------------------------------------------------
+			Файл xsl (XsltBasics/Demos/WhiteSpace3.xsl)
+				<?xml version="1.0" encoding="UTF-8"?>
+				<xsl:stylesheet version="1.0" 
+								xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+					<xsl:output method="text"/>
+					<xsl:template match="name">
+						<xsl:value-of select="firstname"/>
+						<xsl:value-of select="lastname"/>
+					</xsl:template>
+				</xsl:stylesheet>
+			------------------------------------------------------------------------------
+			Вывод PaulMcCartneyJohnLennon .....
+			
+			Использование xsl:text поможет нам указать, сколько пробелов нам необходимо в каждой из позиций.
+			
+			------------------------------------------------------------------------------
+			Файл xsl (XsltBasics/Demos/WhiteSpace4.xsl)
+			<?xml version="1.0" encoding="UTF-8"?>
+			<xsl:stylesheet version="1.0" 
+							xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+				<xsl:output method="text"/>
+				<xsl:template match="name">
+					<xsl:value-of select="firstname"/>
+					<xsl:text> </xsl:text>
+					<xsl:value-of select="lastname"/>
+					<xsl:text>
+				</xsl:text>
+				</xsl:template>
+			</xsl:stylesheet>
+			------------------------------------------------------------------------------
+
+Типы выхода
+		Тип вывода определяется атрибутом xsl:output, который должен находиться в элементе xsl: stylesheet.
+		
+		Text
+			<xsl:output method="text"/>
+			XSLT можно использовать для вывода обычного текста. Однако XSLT гораздо чаще используется для преобразования одной структуры XML в другую структуру XML или в HTML.
+		
+		XML
+			<xsl:output method="xml"/>
+			Метод вывода по умолчанию (в большинстве случаев) - XML. То есть XSLT без элемента xsl:output будет выводить XML
+		
+		Literal Result Elements
+			Выходные XML-теги называются literal result elements (литеральными результирующими элементами). Это связано с тем, что они выводятся буквально, а не используют XSLT для определения формата вывода.
+		
+		Полезные xsl: выходные атрибуты при выводе XML
+		
+		Attribute: method					- устанавливается XML.
+???		Attribute: indent					- true или false. По умолчанию - false. Если true - 
+		Attribute: omit-xml-declaration		- true или false. Если false, то результирующий XML-документ будет начинаться с объявления XML. По умолчанию false.
+		Attribute: version					- Задает XML-версию результирующего XML-документа.
+		
+		В приведенных ниже документах показано, как XSLT можно использовать для вывода XML
+		
+		
+Elements and Attributes
+		
+	xsl:element	
+		Тег xsl: element можно использовать, чтобы явно указать, что элемент предназначен для вывода. Вы заметите, что тег xsl:element принимает атрибут name, который используется для указания имени выводимого элемента.
+	
+	
+	
+	xsl:attribute	
+		Поскольку использование xsl:attribute может быть немного трудоемким, доступен сокращенный синтаксис. XPath в фигурных скобках ({}) может быть встроен в качестве значения атрибута в открытый тег. Следующий пример иллюстрирует это.
+		
+		Входной xml 
+		------------------------------------------------------------------
+			<?xml version="1.0"?>
+			<?xml-stylesheet href="NameHTML.xsl" type="text/xsl"?>
+			<person>
+				<name>
+					<firstname>Paul</firstname>
+					<lastname>McCartney</lastname>
+				</name>
+			</person>
+		------------------------------------------------------------------
+		
+		xsl Указываем атрибуты	
+		Обратите внимание, что значение атрибута Name - это просто "Some Name". Мы хотели бы создать это значение из исходного XML-документа, выполнив что-то вроде этого:
+			
+			<?xml version="1.0" encoding="UTF-8"?>
+			<xsl:stylesheet version="1.0"
+							xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+				<xsl:output method="xml" indent="yes" version="1.0"/>
+				<xsl:template match="name">
+					<Matches>
+						<Match Name="Some Name">We found a name!</Match>
+					</Matches>
+				</xsl:template>
+			</xsl:stylesheet>
+		
+		
+		Тег xsl: attribute применяется к элементу, в который он вложен. В нашем случае, это элемент Match.
+		------------------------------------------------------------------
+			<?xml version="1.0" encoding="UTF-8"?>
+			<xsl:stylesheet version="1.0"
+							xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+				<xsl:output method="xml" indent="yes" version="1.0"/>
+				<xsl:template match="name">
+					<Matches>
+						<Match>
+							<xsl:attribute name="Name">
+								<xsl:value-of select="firstname"/>
+								<xsl:text> </xsl:text>
+								<xsl:value-of select="lastname"/>
+							</xsl:attribute>We found a name!</Match>
+					</Matches>
+				</xsl:template>
+			</xsl:stylesheet>
+		------------------------------------------------------------------
+		
+		xsl Указываем атрибуты. Сокращенная запись.
+		------------------------------------------------------------------
+			<?xml version="1.0" encoding="UTF-8"?>
+			<xsl:stylesheet version="1.0"
+							xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+				<xsl:output method="xml" indent="yes" version="1.0"/>
+				<xsl:template match="name">
+					<Matches>
+						<Match Name="{firstname} {lastname}">We found a name!</Match>
+					</Matches>
+				</xsl:template>
+			</xsl:stylesheet>
+		------------------------------------------------------------------
+		
+		
+		
