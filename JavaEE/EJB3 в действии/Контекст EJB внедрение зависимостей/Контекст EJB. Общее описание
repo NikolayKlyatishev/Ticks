@@ -1,0 +1,63 @@
+
+	Контекст EJB
+		Интерфейс javax.ejb.EJBContext - позволяет работать с контекстом EJB (объект, предоставляющий возможность работать со службами контейнера напрямую.)
+		
+		Службы, предоставляемые интерфейсом EJBContext:
+			public Principal getCallerPrincipal(); 				// Поддержка
+			public boolean isCallerInRole(String roleName); 	// безопасности на уровне компонента
+			
+			public boolean getRollbackOnly(); 					// применяются для управления транзакциями 
+			public void setRollbackOnly(); 						// на уровне контейнера EJB
+			
+			public UserTransaction getUserTransaction();		// для управления транзакциями на уровне компонента
+					
+			public TimerService getTimerService(); 				// Доступ к службе таймеров EJB
+			
+			public Object lookup(String name); 					// Поиск и получение ссылок на объекты в реестре JNDI
+			public Map<String, Object> getContextData(); 		// Доступ к контекстным данным из интерцепторов
+			
+			public EJBHome getEJBHome(); 						// Эти методы используются для получения  интерфейсов соответственно.
+			public EJBLocalHome getEJBLocalHome(); 				// «удаленного» и «локального» домашнего. В EJB3 необязательны.
+			
+			
+	Интерфейсы контекста EJB для разных видов компонентов:
+		Обе разновидности компонентов: Сеансовые и MDB - имеют свои подклассы, реализующие интерфейс EJBContext:
+			- javax.ejb.SessionContext - реализация, добавляющая методы, специфичные для сеансовых компонентов:
+					- getBusinessObject - Возвращает объект, как компонент без интерфейса или как один из прикладных интерфейсов (локальный или удаленный).
+					- getEJBLocalObject, getEJBObject - Возвращает локальный или удаленный объект для текущего экземпляра компонента. Используется для компонентов EJB2. При использовании EJB3 выкидывает исключение.
+					- getInvokedBusinessInterface - Возвращает интерфейс или компонент без интерфейса, использовавшийся для вызова прикладного метода
+					- getMessageContext - Если компонент доступен через веб-службу, этот метод возвращает MessageContext, связанный с этим запросом.
+					- wasCancelCalled - Возвращает true, если пользователь потребовал отменить вызов асинхронного метода, выполняющегося продолжительное время. Добавлен в EJB 3.1. Асинхронные методы возвращают объект Future <V>. Используя этот объект, пользователь может вызвать метод Future<V>.cancel(), чтобы прервать продолжительную асинхронную операцию. 
+			- javax.ejb.MessageDrivenContext -  это реализация, специфичная для компонентов MDB. В этом случае новые методы не добавляются. Интерфейс переропределяет методы isCallerInRole, getEJBHome и getEJBLocalHome таким образом, что они возбухдают исключения.
+	
+	
+		Доступ к EJBContext можно получить через внедрение зависимостей. Например используя аннотацию @Resource
+			Пример внедрения зависимоти на SessionContext
+				
+					@Stateless
+					public class DefaultBidService implements BidService {
+						@Resource
+						SessionContext context;
+							// ...
+					}
+				
+					@MessageDriven
+					public class OrderBillingProcessor {
+						@Resource
+						MessageDrivenContext context;
+							// ...
+					}
+			
+			!!! Не допускается внедрять MessageDrivenContext в сеансовые компоненты или SessionContext в компоненты MDB
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

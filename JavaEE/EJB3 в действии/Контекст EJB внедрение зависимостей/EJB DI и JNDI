@@ -1,0 +1,40 @@
+
+	Использование EJB DI и JNDI
+	
+		JNDI - центральное хранилище для ресурсов, управляемых контейнером. Все компоненты, управляемые контейнером, автоматически регистрируются в JNDI.  Ресурсы хранятся в дереве JNDI в виде иерархической структуры.
+			
+		Инициализация контекста JNDI.
+			Чтобы подключиться к службе имен или каталогов, необходимополучить библиотеки JNDI для этой службы. При работе в окружении Java EE, сервер приложений уже имеет и загружает все необходимые библиотеки для доступа к окружению JNDI. В противном случаевам потребуется настроить свое приложение, указав, какие библиотеки JNDI оно должно использовать. Сделать это можно:
+				- Программно, например, создав объект Properties и передав его конструктору InitialContext. В этом примере выполняется настройка объекта Properties для доступа к дереву JNDI удаленного сервера приложений Oracle. 				
+					Properties properties = new Properties();
+					properties.put(Context.INITIAL_CONTEXT_FACTORY, "oracle.j2ee.rmi.RMIInitialContextFactory");
+					properties.put(Context.PROVIDER_URL, "ormi://192.168.0.6:23791/appendixa");
+					properties.put(Context.SECURITY_PRINCIPAL, "oc4jadmin");
+					properties.put(Context.SECURITY_CREDENTIALS, "welcome1");
+					Context context = new InitialContext(properties);
+					
+				- Создать файл jndi.properties, положить его где-нибудь в пути CLASSPATH приложения, сохранить в этом файле те же самые пары имя/значение, что помещаются в объект Properties. После этого данный файл будет использоваться автоматически при создании контекста вызовом InitialContext:
+					Context context = new InitialContext();
+			Наиболее часто используемые свойства, необходимые для подключения к удаленной службе JNDI в окружении Java EE:
+				java.naming.factory.initial 			- Имя фабричного класса, который будет использоваться для создания контекста. (oracle.j2ee.rmi.RMIInitialContextFactory)
+				java.naming.provider.url 				- Адрес URL удаленной службы JNDI. (ormi://localhost:23791/chapter1)
+				java.naming.security.principal 			- Имя пользователя илидругая идентификационная информация, позволяющая аутентифицировать вызывающую программу в службе JNDI. (oc4jadmin)
+				java.naming.security.credentials		- Пароль, используемый для аутентификации (welcome1)
+		
+		Поиск ресурсов в JNDI
+			После подключения к провайдеру JNDI можно воспользоваться функциональными возможностями интерфейса Context и получить желаемый ресурс, используя метод lookup.
+				Object lookup (String name) - Возвращает ресурс с именем name, который следует привести к требуемому типу. Если в аргументе name передать пустую строку, возвращается новый экземпляр Context.
+
+			Пример:  Допустим, что компонент BidService зарегистрирован в JNDI под именем “/ejb/bid/BidService”
+				Чтобы найти его, можно:
+					Context context = new InitialContext();
+					BidService service = (BidService) context.lookup(“/ejb/bid/BidService”);
+				или последовательно:
+					Context newContext = new InitialContext();
+					Context bidContext = (Context) newContext.lookup(“/ejb/bid/”);
+					BidService service = (BidService) bidContext.lookup(“BidService”);
+					
+					
+5.2.2. Как присваиваются имена компонентам EJB	
+стр 166				
+			
