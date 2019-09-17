@@ -1,0 +1,63 @@
+
+	Общее описание
+	
+		Фрагмент кода, осуществляющий отправку запроса:
+	
+	----------------------------------------------------------------------------
+		@Inject 													// Простая аннотация CDI		
+		@JMSConnectionFactory(“jms/QueueConnectionFactory”) 		// Используемая фабрика очередей
+		private JMSContext context; 								// Упрощенный интерфейс JMS
+		
+		@Resource(name=”jms/ShippingRequestQueue”) 					// Используемая
+		private Destination destination; 							// очередь
+		
+		ShippingRequest shippingRequest = new ShippingRequest(); 	// 	Запрос
+		shippingRequest.setItem(“item”); 							// 	ShippingRequest
+		shippingRequest.setShippingAddress(“address”); 				// 	посылаемый
+		shippingRequest.setShippingMethod(“method”); 				// 	в
+		shippingRequest.setInsuranceAmount(100.50); 				// 	сообщении
+		
+		
+		ObjectMessage om = context.createObjectMessage(); 			// JMSObjectMessage для	 
+		om.setObject(shippingRequest); 								// отправки ShippingRequest
+		
+		JMSProducer producer = context.createProducer(); 			// JMSProducer,
+		producer.send(destination, om); 							// выполняющий отправку
+	----------------------------------------------------------------------------
+	
+		Описание этапов отправки сообщения:
+			1. Получение фабрики соединений и адреса.
+				
+				-  Получаем фабрику очередей и получаем соединение с нужно нам очередью.			
+					Эти ресурсы хранятся в реестре JNDI, они создаются и настраиваются за пределами программного кода, обычно посредством конфигурационных файлов XML или административной консоли. 
+					
+					В JMS имеется два основных типа ресурсов: 
+						javax.jms.JMSContext 	- интейрфейс JMS. 
+							1. получаем объект благодаря CDI, 
+							2. настройка соединения с фабрикой выполняем благодаря аннотации @JMSConnectionFactory(“jms/QueueConnectionFactory”). Объект JMSContext обертывает javax.jmx.ConnectionFactory и javax.jmx.Session в один объект.
+						javax.jms.Destination 	- используемая очередь сообщений
+							1. с помощью аннотации @Resource выполняется внедрение очереди для отправки сообщений, имя которой ShippingRequestQueue
+	
+			2. Подготовка сообщения.	
+				- Создаем новый экземпляр объекта, реализующего интерфейс Serializable, заполнить данными.
+				- Указываем тип сообщения (посмотреть возможно в пакете javax.jms.*)
+				- C помощью JMSContext создаем объект ObjectMessage и включаем в него объект ShippingRequest.
+			
+			3. Отправка сообщения.
+				- В процессе подготовки сообщения мы получили JMSContext. При помощи метода createProducer() получаем отправителя:
+						MSProducer producer = context.createProducer(); 
+				- При помощи метода send отправляем сообщение:
+						producer.send(destination, om);
+						
+			4. Освобождение ресурсов
+				Контейнер может автоматически автоматически освободить ресурсы. С другой стороны, если приложение JavaSE работает в неуправляемом окружении необходимо освободить резурны, явно вызвав метод close(), либо включить объект, реализующий интерфейс JMSContext в конструкция try-with-resourse
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
