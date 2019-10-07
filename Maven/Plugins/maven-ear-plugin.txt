@@ -1,0 +1,35 @@
+Описание плагина.
+
+Структура простого EAR архива
+	1. Дескриптор развертывания приложения META-INF/application.xml.
+	2. Любое количество EJB-модулей, которые содержатся в JAR архивах со своими дескрипторами внутри.
+	3. Любое количество Java библиотек, которые так же содержатся в JAR архивах.
+	4. Web-модуль, который содержится в WAR архиве и содержит дескриптор WEB-INF/web.xml, сервлеты, jsp файлы и другие ресурсы.
+
+
+	Построение EAR.
+
+	1. Указать внутри тега <project> тег <packaging>ear</packaging>. Этот тег - сигнал мавену, что нужно собрать ear.
+	2. Добавить зависимости на все зависимые модули (ejb, war, jar). Всегда укахываем <type></type> у зависимости. 
+		Для ejb <type>ejb</type>
+		Для war <type>war</type>
+		Для jar <type>jar</type>
+
+	После выполнения clean; install в целевой папке был сформирован application.xml:
+	
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE application PUBLIC
+	 "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN"
+	 "http://java.sun.com/dtd/application_1_3.dtd">
+	<application>
+	  	<display-name>ear</display-name>
+	  	<module>
+	    	<ejb>business-1.0-SNAPSHOT.jar</ejb>
+	  	</module>
+	  	<module>
+	    	<web>
+	      		<web-uri>web-1.0-SNAPSHOT.war</web-uri>
+	      		<context-root>/web</context-root>
+	    	</web>
+	  	</module>
+	</application>

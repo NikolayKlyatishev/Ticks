@@ -1,0 +1,3 @@
+Работа в репозиториями.
+
+mvn dependency:purge-local-repository clean install - чистая перезагрузка локального репозитория (очистка и загрузка.)
