@@ -33,3 +33,114 @@
 	    	</web>
 	  	</module>
 	</application>
+
+
+	Тонкая настройка maven-ear-plugin, добавим конфигурацию плагина:
+
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    ...
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    Добавим свой дексриптор развертывания приложения - application.xml
+
+    в плагин в блок Configuration добавим пункт <applicationXml>${basedir}/src/main/resources/META-INF/application.xml</applicationXml>
+
+    <?xml version="1.0" encoding="UTF-8"?>
+	<application xmlns="http://java.sun.com/xml/ns/javaee"
+	             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	             xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd"
+	             version="6">
+
+	    <display-name>SampleApplication</display-name>
+	    <module>
+	        <ejb>business.jar</ejb>
+	    </module>
+	    <module>
+	        <web>
+	            <web-uri>web.war</web-uri>
+	            <context-root>sampleapp</context-root>
+	        </web>
+	    </module>
+	</application>
+
+	Мы указали: 
+		1. Архив EJB-модуля будет находится в корне с именем business.jar
+		2. архив WEB-модуля будет так же находиться в корне с именем web.war
+		3. корневой URL(context-root) /sampleapp
+			Поскольку на одном сервере приложений может находится несколько приложений, то WEB-модули нужно как-то разграничивать. Для того и нужен context-root. Каждый ресурс WEB-модуля доступен по URL начиная с его context-root. 
+		4. Добавляем настройки в pom.xml EAR-модуля.
+
+	Полный листинг плагина:
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <applicationXml>${basedir}/src/main/resources/META-INF/application.xml</applicationXml>
+                    <modules>
+                        <ejbModule>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>business</artifactId>
+                            <bundleFileName>business.jar</bundleFileName>
+                        </ejbModule>
+                        <webModule>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>web</artifactId>
+                            <bundleFileName>web.war</bundleFileName>
+                        </webModule>
+                    </modules>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    5. Переименуем результирующий EAR архив. Для этого:добавим в pom.xml EAR-модуля <earName>SampleApplication</earName>. В этом теге расширение не обязательно, но в случае тега <bundleFileName> расширение будет строго обязательно. В противном случае архим и будет без расширения.
+
+    
+    ОФ ДОКА!!!
+    Configuration
+	    bundleDir: указывает каталог в структуре EAR, где будет храниться артефакт
+		bundleFileName: указывает наименование артефакта в структуре EAR.
+		uri:указывает полный путь в структуре EAR для артефакта
+		excluded: исключает артефакт из созданного EAR.
+		unpack: распаковывает артефакт в сгенерированном EAR.
+
+	Контекст rooy или web модулей может быть настроен благодаря использованию параметра contextRoot.
+	Обратите внимание, что сторонние библиотеки (например, JarModule) не включены в созданное application.xml (только ejb-клиент должен быть включен в запись java). Однако зависимость jar может быть включена в созданное application.xml, указав флаг includeInApplicationXml.
+	Также можно указать каталог пакетов по умолчанию для всех сторонних библиотек, указав параметр defaultLibBundleDir.
+	Параметры безопасности могут быть указаны в параметре security
+	Типы артефактов, которые должны быть распакованы по умолчанию, можно указать с помощью параметра unpackTypes.
+	Сопоставление имен файлов для артефактов, хранящихся в EAR, можно задать с помощью параметра fileNameMapping. Допустимыми значениями этого параметра являются standard (по умолчанию), full, no-version и no-version-for-ejb. При указании полного сопоставления имен файлов артефакты имеют префикс groupId, в котором точки заменены тире. no-version можно использовать в качестве замены сопоставления по умолчанию; единственное отличие заключается в том, что версия опущена. no-version-for-ejb-это специализация, которая опускает версию только для ejb-jars и сохраняет ее для других модулей ear.
+
+	JBoss support
+	Плагин EAR может создать application.xml автоматически. Для этого элемент <jboss> должен быть настроен и принимать следующие дочерние элементы:
+		- version: целевая версия JBoss для использования, 3.2, 4, 4.2 или 5 (по умолчанию 4).
+		- library-directory: каталог, в котором можно найти библиотеки в EAR (только JBoss 4.2+).
+		- security-domain: имя JNDI менеджера безопасности (только для JBoss 4+).
+		- unauthenticated-principal:не прошедший проверку подлинности Принципал (только JBoss 4+).
+		- loader-repository: имя UnifiedLoaderRepository MBean для использования для EAR, чтобы обеспечить область видимости уровня EAR классов, развернутых в EAR. Он может иметь атрибут loaderRepositoryClass, который определяет используемый класс репозитория загрузчика классов.
+		- loader-repository-config: конфигурация репозитория загрузчика классов. Если элемент loader-repository не определен, добавляется элемент по умолчанию. Он может иметь атрибут configParserClass, который определяет используемый класс анализатора конфигурации загрузчика классов
+		- jmx-name: имя объекта EAR MBean.
+		- module-order: укажите порядок, в котором модули указаны в application.xml-файле загружается (только JBoss 4.2+).
+		- data-sources: указать нужный источник данных, чтобы добавить в application.xml, использование выглядит следующим образом:
+			<configuration>
+			  <jboss>
+			    [...]
+			    <data-sources>
+			      <data-source>main-ds.xml</data-source>
+			      <data-source>config/secondary-ds.xml</data-source>
+			      [...]
+			    </data-sources>
+			  </jboss>
+			</configuration>
